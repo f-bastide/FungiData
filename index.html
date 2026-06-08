@@ -262,7 +262,7 @@ function saveLocal() {
 // ---- GITHUB SYNC ----
 
 async function loadFromGitHub() {
-  if (GH_TOKEN === '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') return;
+  if (!GH_TOKEN()) return;
   try {
     showSyncStatus('⏳ Chargement des modifications partagées…', '#888');
     const resp = await fetch(
@@ -295,7 +295,7 @@ async function loadFromGitHub() {
 }
 
 async function saveToGitHub() {
-  if (GH_TOKEN === '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') return;
+  if (!GH_TOKEN()) return;
   try {
     showSyncStatus('⏳ Synchronisation en cours…', '#888');
     const content = btoa(unescape(encodeURIComponent(JSON.stringify({
