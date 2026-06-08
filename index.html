@@ -124,6 +124,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <label>Mot de passe</label>
       <input type="password" id="pwdInput" placeholder="••••••••" onkeydown="if(event.key==='Enter') checkPassword()" autofocus />
     </div>
+    <div class="login-field">
+      <label>Token GitHub <span style="color:#aaa;font-weight:400">(pour la sync du stock)</span></label>
+      <input type="password" id="ghTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" onkeydown="if(event.key==='Enter') checkPassword()" />
+      <div style="font-size:11px;color:#aaa;margin-top:3px">Demande ce token à l'administrateur. Optionnel pour la consultation.</div>
+    </div>
     <button class="login-btn" onclick="checkPassword()">Accéder</button>
     <div class="login-error" id="loginError">Mot de passe incorrect.</div>
     <div style="font-size:11px;color:#ccc;margin-top:16px">Accès réservé à l'équipe FungiSem</div>
@@ -236,11 +241,12 @@ let exportedCount = 0;
 let githubSHA = null; // SHA du fichier modifications.json sur GitHub
 
 // ---- CONFIG GITHUB ----
-// Remplace ces valeurs par les tiennes
-const GH_TOKEN   = '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';
-const GH_OWNER   = 'f-bastide';
-const GH_REPO    = 'FungiData';
-const GH_FILE    = 'modifications.json';
+const GH_OWNER = 'f-bastide';
+const GH_REPO  = 'FungiData';
+const GH_FILE  = 'modifications.json';
+function GH_TOKEN() {
+  try { return sessionStorage.getItem('fungisem_ghtoken') || ''; } catch(e) { return ''; }
+}
 // -------------------------
 
 // Charger depuis localStorage en attendant le chargement GitHub
@@ -261,7 +267,7 @@ async function loadFromGitHub() {
     showSyncStatus('⏳ Chargement des modifications partagées…', '#888');
     const resp = await fetch(
       `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`,
-      { headers: { 'Authorization': 'token ' + GH_TOKEN, 'Accept': 'application/vnd.github.v3+json' } }
+      { headers: { 'Authorization': 'token ' + GH_TOKEN(), 'Accept': 'application/vnd.github.v3+json' } }
     );
     if (resp.status === 404) {
       // Fichier n'existe pas encore - normal au premier lancement
@@ -307,7 +313,7 @@ async function saveToGitHub() {
       {
         method: 'PUT',
         headers: {
-          'Authorization': 'token ' + GH_TOKEN,
+          'Authorization': 'token ' + GH_TOKEN(),
           'Content-Type': 'application/json',
           'Accept': 'application/vnd.github.v3+json'
         },
@@ -820,6 +826,11 @@ const PASSWORDS = ['FungiSem2024', 'IRHS2024']; // modifie ces mots de passe
 function checkPassword() {
   const pwd = document.getElementById('pwdInput').value;
   if (PASSWORDS.includes(pwd)) {
+    // Sauvegarder le token GitHub si fourni
+    const ghToken = (document.getElementById('ghTokenInput')||{}).value || '';
+    if (ghToken.trim()) {
+      try { sessionStorage.setItem('fungisem_ghtoken', ghToken.trim()); } catch(e) {}
+    }
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
     try { sessionStorage.setItem('fungisem_auth', '1'); } catch(e) {}
