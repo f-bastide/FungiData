@@ -234,7 +234,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 
 <script>
 // Login - script independant charge avant les donnees
-var PASSWORDS = ['FungiSem2024', 'IRHS2024'];
+var PASSWORDS = ['Alternaria43.', 'Belette0330.'];
+
+function showApp() {
+  var loginScreen = document.getElementById('loginScreen');
+  var mainApp = document.getElementById('mainApp');
+  if (loginScreen) loginScreen.style.display = 'none';
+  if (mainApp) mainApp.style.display = 'block';
+}
 
 function checkPassword() {
   var pwd = document.getElementById('pwdInput').value;
@@ -244,11 +251,9 @@ function checkPassword() {
     if (ghToken.trim()) {
       try { sessionStorage.setItem('fungisem_ghtoken', ghToken.trim()); } catch(e) {}
     }
-    var loginScreen = document.getElementById('loginScreen');
-    var mainApp = document.getElementById('mainApp');
-    if (loginScreen) loginScreen.style.display = 'none';
-    if (mainApp) mainApp.style.display = 'block';
     try { sessionStorage.setItem('fungisem_auth', '1'); } catch(e) {}
+    // Petit delai pour s'assurer que le DOM est pret
+    setTimeout(showApp, 50);
   } else {
     var err = document.getElementById('loginError');
     if (err) { err.style.display = 'block'; setTimeout(function(){ err.style.display='none'; }, 3000); }
@@ -257,13 +262,14 @@ function checkPassword() {
   }
 }
 
-// Verifier si deja authentifie dans cette session
-try {
-  if (sessionStorage.getItem('fungisem_auth') === '1') {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-  }
-} catch(e) {}
+// Verifier si deja authentifie - attendre que le DOM soit pret
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    if (sessionStorage.getItem('fungisem_auth') === '1') {
+      showApp();
+    }
+  } catch(e) {}
+});
 </script>
 
 <script>
