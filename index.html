@@ -136,9 +136,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 </div>
 <div class="header">
   <span class="strain-count" id="totalCount">chargement…</span>
-  <div id="syncStatus" style="display:none;font-size:12px;margin-left:auto;margin-right:8px"></div>
-  <button onclick="loadFromGitHub()" style="margin-left:auto;background:none;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer" title="Recharger les modifications partagées">🔄 Sync</button>
-  <label id="updateBtn" style="margin-left:8px;background:#fff;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px" title="Mettre à jour les données depuis le fichier fungisem_data.json exporté par Excel">
+  <label id="updateBtn" style="margin-left:auto;background:#fff;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px" title="Mettre à jour les données depuis le fichier fungisem_data.json exporté par Excel">
     🔄 Mettre à jour
     <input type="file" accept=".json" style="display:none" onchange="handleUpdate(this)">
   </label>
@@ -233,17 +231,7 @@ const DB = {"strains":{"FungiSem 00001":{"accession":"FungiSem 00001","collectio
 let stockMods = {};
 let editHistory = [];
 let exportedCount = 0;
-let githubSHA = null; // SHA du fichier modifications.json sur GitHub
 
-// ---- CONFIG GITHUB ----
-// Remplace ces valeurs par les tiennes
-const GH_TOKEN   = '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';
-const GH_OWNER   = 'f-bastide';
-const GH_REPO    = 'FungiData';
-const GH_FILE    = 'modifications.json';
-// -------------------------
-
-// Charger depuis localStorage en attendant le chargement GitHub
 try {
   const saved = localStorage.getItem('fungisem_v2');
   if (saved) { const p = JSON.parse(saved); stockMods = p.mods||{}; editHistory = p.history||[]; exportedCount = p.exported||0; }
@@ -251,98 +239,6 @@ try {
 
 function saveLocal() {
   try { localStorage.setItem('fungisem_v2', JSON.stringify({mods:stockMods, history:editHistory, exported:exportedCount})); } catch(e){}
-}
-
-// ---- GITHUB SYNC ----
-
-async function loadFromGitHub() {
-  if (GH_TOKEN === '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') return;
-  try {
-    showSyncStatus('⏳ Chargement des modifications partagées…', '#888');
-    const resp = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`,
-      { headers: { 'Authorization': 'token ' + GH_TOKEN, 'Accept': 'application/vnd.github.v3+json' } }
-    );
-    if (resp.status === 404) {
-      // Fichier n'existe pas encore - normal au premier lancement
-      showSyncStatus('✅ Connecté à GitHub (aucune modification partagée pour l'instant)', '#1D9E75');
-      setTimeout(() => hideSyncStatus(), 3000);
-      return;
-    }
-    if (!resp.ok) throw new Error('Erreur GitHub: ' + resp.status);
-    const data = await resp.json();
-    githubSHA = data.sha;
-    const content = JSON.parse(atob(data.content.replace(/\n/g, '')));
-    // Fusionner avec les modifications locales
-    // GitHub est la source de vérité
-    stockMods = content.mods || {};
-    editHistory = content.history || [];
-    exportedCount = content.exported || 0;
-    saveLocal();
-    updateExportBar();
-    showSyncStatus('✅ Modifications synchronisées (' + editHistory.length + ' entrées)', '#1D9E75');
-    setTimeout(() => hideSyncStatus(), 3000);
-  } catch(e) {
-    showSyncStatus('⚠️ Impossible de se connecter à GitHub : ' + e.message, '#E07B00');
-    setTimeout(() => hideSyncStatus(), 5000);
-  }
-}
-
-async function saveToGitHub() {
-  if (GH_TOKEN === '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') return;
-  try {
-    showSyncStatus('⏳ Synchronisation en cours…', '#888');
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify({
-      mods: stockMods,
-      history: editHistory,
-      exported: exportedCount
-    }, null, 2))));
-    const body = {
-      message: 'Mise à jour stock - ' + new Date().toLocaleString('fr-FR'),
-      content: content,
-    };
-    if (githubSHA) body.sha = githubSHA;
-    const resp = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': 'token ' + GH_TOKEN,
-          'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github.v3+json'
-        },
-        body: JSON.stringify(body)
-      }
-    );
-    if (!resp.ok) {
-      const err = await resp.json();
-      // Conflit SHA - recharger et réessayer
-      if (resp.status === 409 || resp.status === 422) {
-        await loadFromGitHub();
-        return;
-      }
-      throw new Error(err.message || resp.status);
-    }
-    const result = await resp.json();
-    githubSHA = result.content.sha;
-    showSyncStatus('✅ Modifications sauvegardées pour toute l'équipe', '#1D9E75');
-    setTimeout(() => hideSyncStatus(), 3000);
-  } catch(e) {
-    showSyncStatus('⚠️ Erreur de synchronisation : ' + e.message, '#E07B00');
-    setTimeout(() => hideSyncStatus(), 5000);
-  }
-}
-
-function showSyncStatus(msg, color) {
-  let el = document.getElementById('syncStatus');
-  if (!el) return;
-  el.textContent = msg;
-  el.style.color = color;
-  el.style.display = 'block';
-}
-function hideSyncStatus() {
-  const el = document.getElementById('syncStatus');
-  if (el) el.style.display = 'none';
 }
 
 let modalContext = null;
@@ -585,7 +481,6 @@ function confirmEdit() {
     oldQty, newQty, user: userName, exported: false
   });
   saveLocal();
-  saveToGitHub(); // Sauvegarder sur GitHub pour partage avec l'équipe
 
   const qtyEl = document.getElementById('qty-'+key.replace(/ /g,'__').replace(/\|/g,'__'));
   if (qtyEl) { qtyEl.textContent = newQty; qtyEl.className = 'qty-val qty-modified'; }
@@ -624,7 +519,6 @@ function exportModificationsCSV() {
   editHistory.forEach(h => { if(!h.exported) h.exported = true; });
   exportedCount += pending.length;
   saveLocal();
-  saveToGitHub();
   updateExportBar();
   renderHistory();
 }
@@ -878,8 +772,6 @@ function escId(s){return String(s).replace(/ /g,'__').replace(/\|/g,'__').replac
 
 // Init
 updateExportBar();
-// Charger les modifications partagées depuis GitHub au démarrage
-setTimeout(() => loadFromGitHub(), 500);
 </script>
 </div>
 </body>
