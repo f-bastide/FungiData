@@ -647,7 +647,10 @@ function renderPrimers(q, showAll){
         const na = parseInt(a.stock)||0, nb = parseInt(b.stock)||0;
         return nb - na;
       })
-    : DB.primers.filter(p=>p.name.toLowerCase().includes(q));
+    : [...DB.primers].filter(p=>p.name.toLowerCase().includes(q)).sort((a,b) => {
+        const na = parseInt(a.stock)||0, nb = parseInt(b.stock)||0;
+        return nb - na;
+      });
   if(!m.length){document.getElementById('primerResults').innerHTML=`<div class="no-results">Aucun primer trouvé pour "${escHtml(q)}".</div>`;return;}
   const label = showAll ? `${m.length} amorces (du plus grand au plus petit numéro de stock)` : `${m.length} résultat(s) pour "${escHtml(q)}"`;
   document.getElementById('primerResults').innerHTML='<div style="font-size:12px;color:#888;margin-bottom:8px">'+label+'</div>'+m.slice(0,200).map(p=>
@@ -759,7 +762,7 @@ function handleUpdate(input) {
 }
 
 // ---- LOGIN ----
-const PASSWORDS = ['Alternaria43', 'Belette0330']; // modifie ces mots de passe
+const PASSWORDS = ['Alternaria43.', 'Belette0330.']; // modifie ces mots de passe
 
 function checkPassword() {
   const pwd = document.getElementById('pwdInput').value;
