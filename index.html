@@ -389,7 +389,7 @@ function renderCardBody(acc) {
     <thead><tr><th>Salle</th><th>Congélateur</th><th>Tiroir</th><th>Boîte</th><th>Ligne</th><th>Colonne</th><th>Explants</th><th></th></tr></thead>
     <tbody>`;
     stocks.forEach((st, idx) => {
-      const key = `${acc}|${idx}`;
+      const key = `${acc}|${st.room}|${st.freezer}|${st.row}|${st.col}`;
       const isModified = stockMods[key] !== undefined;
       const currentQty = isModified ? stockMods[key] : st.qty;
       const qtyClass = isModified ? 'qty-val qty-modified' : 'qty-val';
@@ -452,7 +452,7 @@ function renderCardBody(acc) {
 // ---- EDIT MODAL ----
 function openEditModal(accId, stockIdx, key, currentQty, room, freezer, tray, box, rowPos, colPos) {
   const acc = accId.replace(/__/g,' ');
-  modalContext = {acc, stockIdx:parseInt(stockIdx), key:key.replace(/__/g,' '), room, freezer, tray, box, rowPos, colPos};
+  modalContext = {acc, stockIdx:parseInt(stockIdx), room, freezer, tray, box, rowPos, colPos};
   document.getElementById('modalInfo').innerHTML = `<strong>${escHtml(acc)}</strong><br>Salle ${escHtml(room)} · ${escHtml(freezer)} · Tiroir ${escHtml(tray)} · Boîte ${escHtml(box)} · R${escHtml(rowPos)} C${escHtml(colPos)}`;
   document.getElementById('newQtyInput').value = currentQty;
   const savedName = localStorage.getItem('fungisem_username')||'';
@@ -474,7 +474,8 @@ function confirmEdit() {
 
   try { localStorage.setItem('fungisem_username', userName); } catch(e){}
 
-  const {acc, stockIdx, key, room, freezer, tray, box, rowPos, colPos} = modalContext;
+  const {acc, stockIdx, room, freezer, tray, box, rowPos, colPos} = modalContext;
+  const key = acc + '|' + room + '|' + freezer + '|' + rowPos + '|' + colPos;
   const stocks = DB.stocks[acc]||[];
   const st = stocks[stockIdx];
   const oldQty = stockMods[key]!==undefined ? stockMods[key] : st.qty;
