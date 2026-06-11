@@ -495,6 +495,7 @@ function confirmEdit() {
   if (qtyEl) { qtyEl.textContent = newQty; qtyEl.className = 'qty-val qty-modified'; }
   closeModal();
   updateExportBar();
+  if (document.getElementById('tab-history').classList.contains('active')) renderHistory();
 }
 
 function updateExportBar() {
@@ -681,7 +682,19 @@ async function loadFromGitHub() {
     const d = await r.json();
     githubSHA = d.sha;
     const c = JSON.parse(atob(d.content.replace(/\n/g,'')));
-    stockMods=c.mods||{}; editHistory=c.history||[]; exportedCount=c.exported||0;
+    // Merge: combine GitHub history with local entries not yet on GitHub
+    const ghHistory = c.history || [];
+    const ghDates = new Set(ghHistory.map(h => h.date+'|'+h.time+'|'+h.acc));
+    const localOnly = editHistory.filter(h => !ghDates.has(h.date+'|'+h.time+'|'+h.acc));
+    editHistory = [...localOnly, ...ghHistory];
+    // GitHub stockMods wins (most recent server state), then apply local overrides
+    stockMods = Object.assign({}, c.mods||{});
+    // Re-apply local modifications not yet saved
+    localOnly.forEach(h => {
+      const k = h.acc+'|'+h.room+'|'+h.freezer+'|'+(h.rowPos||'')+'|'+(h.colPos||'');
+      stockMods[k] = h.newQty;
+    });
+    exportedCount = c.exported||0;
     saveLocal(); updateExportBar();
     showSyncStatus('✅ '+editHistory.length+' modifs','#1D9E75');
     setTimeout(hideSyncStatus,3000);
@@ -696,7 +709,15 @@ async function saveToGitHub() {
     if (githubSHA) body.sha=githubSHA;
     const r=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+GH_FILE,
       {method:'PUT',headers:{'Authorization':'token '+GH_TOKEN(),'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},body:JSON.stringify(body)});
-    if (!r.ok){if(r.status===409||r.status===422){await loadFromGitHub();return;}throw new Error(r.status);}
+    if (!r.ok){
+      if(r.status===409||r.status===422){
+        // Conflict: reload GitHub state (merging local), then retry save
+        await loadFromGitHub();
+        await saveToGitHub(); // retry after merge
+        return;
+      }
+      throw new Error(r.status);
+    }
     const res=await r.json(); githubSHA=res.content.sha;
     showSyncStatus('✅ Sauvegardé','#1D9E75');setTimeout(hideSyncStatus,3000);
   } catch(e){showSyncStatus('⚠️ '+e.message,'#E07B00');setTimeout(hideSyncStatus,4000);}
