@@ -122,6 +122,68 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .admin-modal-actions .btn-cancel{background:none;border:0.5px solid #d0d0c8;color:#666;border-radius:7px;padding:7px 12px;cursor:pointer;font-family:inherit;font-size:13px}
 .admin-error{color:#c00;font-size:12px;margin-top:6px;display:none}
 </style>
+<script>
+var PASSWORDS = ['Alternaria43.', 'Belette0330.'];
+
+function showApp() {
+  var ls = document.getElementById('loginScreen');
+  var ma = document.getElementById('mainApp');
+  if (ls) ls.style.display = 'none';
+  if (ma) ma.style.display = 'block';
+}
+
+function checkPassword() {
+  var pwd = document.getElementById('pwdInput').value;
+  if (PASSWORDS.indexOf(pwd) !== -1) {
+    var ghEl = document.getElementById('ghTokenInput');
+    var gh = ghEl ? ghEl.value.trim() : '';
+    if (gh) { try { sessionStorage.setItem('fungisem_ghtoken', gh); } catch(e){} }
+    try { sessionStorage.setItem('fungisem_auth','1'); } catch(e){}
+    showApp();
+    if (typeof loadDB === 'function') loadDB();
+    else { var t = setInterval(function(){ if(typeof loadDB==='function'){clearInterval(t);loadDB();} }, 100); }
+  } else {
+    var err = document.getElementById('loginError');
+    if (err) { err.style.display='block'; setTimeout(function(){err.style.display='none';},3000); }
+    document.getElementById('pwdInput').value = '';
+    document.getElementById('pwdInput').focus();
+  }
+}
+
+function confirmAdmin() {
+  var pwd = document.getElementById('adminPwdInput').value;
+  var ADMIN_PWD = 'Belette0330.';
+  if (pwd !== ADMIN_PWD) {
+    var err = document.getElementById('adminError');
+    if (err) { err.style.display='block'; }
+    document.getElementById('adminPwdInput').value = '';
+    document.getElementById('adminPwdInput').focus();
+    return;
+  }
+  document.getElementById('adminModal').classList.remove('show');
+  var action = window._adminAction;
+  window._adminAction = null;
+  if (action === 'update') {
+    var t = setInterval(function(){
+      var fi = document.getElementById('updateFileInput');
+      if (fi) { clearInterval(t); fi.click(); }
+    }, 50);
+  } else if (action === 'export') {
+    var t2 = setInterval(function(){
+      if (typeof _doExport === 'function') { clearInterval(t2); _doExport(); }
+    }, 50);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    if (sessionStorage.getItem('fungisem_auth') === '1') {
+      showApp();
+      var t = setInterval(function(){ if(typeof loadDB==='function'){clearInterval(t);loadDB();} }, 100);
+    }
+  } catch(e){}
+});
+</script>
 </head>
 <body>
 <div id="loginScreen" class="login-screen">
@@ -843,23 +905,7 @@ function closeAdminModal() {
   _adminCallback = null;
 }
 
-function confirmAdmin() {
-  const pwd = document.getElementById('adminPwdInput').value;
-  if (pwd !== ADMIN_PWD) {
-    document.getElementById('adminError').style.display = 'block';
-    document.getElementById('adminPwdInput').value = '';
-    document.getElementById('adminPwdInput').focus();
-    return;
-  }
-  // Show correct step based on action
-  document.getElementById('adminStep1').style.display = 'none';
-  if (_adminAction === 'update') {
-    document.getElementById('adminStep2').style.display = 'block';
-  } else if (_adminAction === 'export') {
-    document.getElementById('adminStep3').style.display = 'block';
-  }
-}
-
+// confirmAdmin gere dans <head>
 function adminExport() {
   _adminAction = 'export';
   openAdminModal();
@@ -952,27 +998,7 @@ function handleUpdate(input) {
 }
 
 // ---- LOGIN ----
-const PASSWORDS = ['Alternaria43.', 'Belette0330.']; // modifie ces mots de passe
-
-function checkPassword() {
-  const pwd = document.getElementById('pwdInput').value;
-  if (PASSWORDS.includes(pwd)) {
-    const _ghEl = document.getElementById('ghTokenInput');
-    const _ghTok = _ghEl ? _ghEl.value.trim() : '';
-    if (_ghTok) { try { sessionStorage.setItem('fungisem_ghtoken', _ghTok); } catch(e){} }
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    try { sessionStorage.setItem('fungisem_auth', '1'); } catch(e) {}
-    if (typeof loadDB === 'function') loadDB();
-  } else {
-    const err = document.getElementById('loginError');
-    err.style.display = 'block';
-    document.getElementById('pwdInput').value = '';
-    document.getElementById('pwdInput').focus();
-    setTimeout(() => err.style.display = 'none', 3000);
-  }
-}
-
+// Login gere dans <head>
 // Verifier si deja authentifie dans cette session
 try {
   if (sessionStorage.getItem('fungisem_auth') === '1') {
