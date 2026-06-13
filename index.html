@@ -263,10 +263,18 @@ function hideDBLoading() {
 }
 
 async function loadDB() {
+  // Detect local file:// protocol
+  if (window.location.protocol === 'file:') {
+    showDBLoading('⚠️ Mode local : veuillez utiliser FungiSem_app_v17.html pour une utilisation hors ligne.');
+    return;
+  }
   try {
     showDBLoading('⏳ Chargement des données FungiSem...');
     const resp = await fetch('data.json?' + Date.now()); // cache-bust
-    if (!resp.ok) throw new Error('Impossible de charger data.json (' + resp.status + ')');
+    if (!resp.ok) {
+      if (resp.status === 404) throw new Error('data.json introuvable sur GitHub — uploadez-le sur le dépôt.');
+      throw new Error('Erreur HTTP ' + resp.status);
+    }
     DB = await resp.json();
     dbReady = true;
     hideDBLoading();
@@ -275,7 +283,7 @@ async function loadDB() {
     updateExportBar();
     loadFromGitHub();
   } catch(e) {
-    showDBLoading('❌ Erreur de chargement : ' + e.message);
+    showDBLoading('❌ ' + e.message + ' — Rechargez la page ou contactez l\'administrateur.');
   }
 }
 
