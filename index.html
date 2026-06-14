@@ -175,6 +175,9 @@ function confirmAdmin() {
   }
 }
 
+var _adminAction = null;
+var _adminCallback = null;
+
 document.addEventListener('DOMContentLoaded', function() {
   try {
     if (sessionStorage.getItem('fungisem_auth') === '1') {
@@ -213,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="header">
   <span class="strain-count" id="totalCount">chargement…</span>
   <span id="syncStatus" style="display:none;font-size:12px;margin-left:12px"></span>
-  <button onclick="if(typeof loadFromGitHub==='function')loadFromGitHub()" style="background:none;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;margin-left:8px">🔄 Sync</button>
+  <button onclick="if(typeof loadFromGitHub==='function'&&typeof GH_OWNER!=='undefined')loadFromGitHub();else{var s=document.getElementById('syncStatus');if(s){s.textContent='⏳ Chargement en cours...';s.style.display='block';s.style.color='#888';}}" style="background:none;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;margin-left:8px">🔄 Sync</button>
   <div style="flex:1"></div>
     <button id="updateBtn" onclick="adminAuthUpdate()" style="background:#fff;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px" title="Mettre à jour — Réservé Franck Bastide">
       📥 Mettre à jour <span style="font-size:10px;color:#aaa;margin-left:4px">(Réservé F.B.)</span>
@@ -305,8 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <script>
-let DB = null;
-let dbReady = false;
+var DB = null;
+var dbReady = false;
 
 // Indicateur de chargement
 function showDBLoading(msg) {
@@ -344,9 +347,9 @@ async function loadDB() {
   }
 }
 
-let stockMods = {};
-let editHistory = [];
-let exportedCount = 0;
+var stockMods = {};
+var editHistory = [];
+var exportedCount = 0;
 
 try {
   const saved = localStorage.getItem('fungisem_v2');
@@ -357,11 +360,11 @@ function saveLocal() {
   try { localStorage.setItem('fungisem_v2', JSON.stringify({mods:stockMods, history:editHistory, exported:exportedCount})); } catch(e){}
 }
 
-let modalContext = null;
+var modalContext = null;
 document.getElementById('totalCount').textContent = Object.keys(DB.strains).length + ' souches';
 
 function switchTab(name) {
-  if (!dbReady && (name==='multiple'||name==='primers')) { showDBLoading('⏳ Données en cours de chargement...'); setTimeout(hideDBLoading,2000); return; }
+  if (!dbReady && name==='multiple') { showDBLoading('⏳ Données en cours de chargement...'); setTimeout(hideDBLoading,2000); return; }
   document.querySelectorAll('.tab').forEach((t,i) => {
     t.classList.toggle('active', ['simple','multiple','primers','history'][i] === name);
   });
@@ -687,8 +690,9 @@ const filterFields = [
   {key:'genus',label:'Genre'},{key:'taxon',label:'Taxon'},{key:'habitat',label:'Habitat'},
   {key:'sampling',label:'Prélèvement'},{key:'locality',label:'Localité'},{key:'project',label:'Projet'},
 ];
-let filtersInited = false;
+var filtersInited = false;
 function initFilters() {
+  if (!dbReady || !DB) return;
   if (filtersInited) return; filtersInited = true;
   const champs = DB.champs;
   document.getElementById('filtersGrid').innerHTML = filterFields.map(f => {
@@ -779,10 +783,10 @@ function renderPrimers(q, showAll){
 }
 
 // ---- GITHUB SYNC ----
-const GH_OWNER = 'f-bastide';
-const GH_REPO  = 'FungiData';
-const GH_FILE  = 'modifications.json';
-let githubSHA = null;
+var GH_OWNER = 'f-bastide';
+var GH_REPO  = 'FungiData';
+var GH_FILE  = 'modifications.json';
+var githubSHA = null;
 function GH_TOKEN() { try { return sessionStorage.getItem('fungisem_ghtoken')||''; } catch(e){return '';} }
 
 async function loadFromGitHub() {
@@ -879,16 +883,16 @@ async function pushDataToGitHub(jsonContent) {
 }
 
 // ---- ADMIN FUNCTIONS ----
-const ADMIN_PWD = 'Belette0330.';
+var ADMIN_PWD = 'Belette0330.';
 
-let _adminCallback = null;
+// _adminCallback declared in head
 
 function adminAuthUpdate() {
   _adminAction = 'update';
   openAdminModal();
 }
 
-let _adminAction = null;
+// _adminAction declared in head
 
 function openAdminModal() {
   document.getElementById('adminPwdInput').value = '';
