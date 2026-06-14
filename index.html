@@ -313,6 +313,16 @@ document.addEventListener('DOMContentLoaded', function() {
 var DB = null;
 var dbReady = false;
 
+var filterFields = [
+  "strain",
+  "species",
+  "genus",
+  "country",
+  "host",
+  "habitat",
+  "gene"
+];
+
 // Indicateur de chargement
 function showDBLoading(msg) {
   let el = document.getElementById('dbLoadingMsg');
@@ -362,7 +372,6 @@ function saveLocal() {
 }
 
 var modalContext = null;
-document.getElementById('totalCount').textContent = Object.keys(DB.strains).length + ' souches';
 
 function switchTab(name) {
   if (!dbReady && name==='multiple') { showDBLoading('⏳ Données en cours de chargement...'); setTimeout(hideDBLoading,2000); return; }
@@ -695,71 +704,219 @@ function openStrainFromHistory(accId) {
 }
 
 // ---- MULTI SEARCH ----
+
+// Déclaration globale pour éviter "filterFields is undefined"
 var filterFields = [
-  {key:'morphology',label:'Morphologie'},{key:'division',label:'Division'},{key:'order',label:'Ordre'},
-  {key:'genus',label:'Genre'},{key:'taxon',label:'Taxon'},{key:'habitat',label:'Habitat'},
-  {key:'sampling',label:'Prélèvement'},{key:'locality',label:'Localité'},{key:'project',label:'Projet'},
+  {key:'morphology',label:'Morphologie'},
+  {key:'division',label:'Division'},
+  {key:'order',label:'Ordre'},
+  {key:'genus',label:'Genre'},
+  {key:'taxon',label:'Taxon'},
+  {key:'habitat',label:'Habitat'},
+  {key:'sampling',label:'Prélèvement'},
+  {key:'locality',label:'Localité'},
+  {key:'project',label:'Projet'}
 ];
+
 var filtersInited = false;
+
+
 function initFilters() {
-  if (!dbReady || !DB) return;
-  if (filtersInited) return; filtersInited = true;
-  const champs = DB.champs;
-  document.getElementById('filtersGrid').innerHTML = filterFields.map(f => {
-    const vals = champs[f.key]||[];
-    const opts = vals.filter(v=>v&&v!=='None').map(v=>`<option value="${escHtml(v)}">${escHtml(v)}</option>`).join('');
-    return `<div class="filter-group"><label>${f.label}</label>
-      <select id="f-${f.key}"><option value="">— Tous —</option>${opts}</select></div>`;
-  }).join('');
+
+  // sécurité : attendre la DB
+  if (!dbReady || !DB) {
+    console.warn("initFilters : DB pas encore chargée");
+    return;
+  }
+
+  if (!Array.isArray(filterFields)) {
+    console.error("filterFields absent");
+    return;
+  }
+
+  if (filtersInited) return;
+  filtersInited = true;
+
+
+  const champs = DB.champs || {};
+
+  document.getElementById('filtersGrid').innerHTML =
+    filterFields.map(f => {
+
+      const vals = champs[f.key] || [];
+
+      const opts = vals
+        .filter(v => v && v !== 'None')
+        .map(v =>
+          `<option value="${escHtml(v)}">${escHtml(v)}</option>`
+        )
+        .join('');
+
+      return `
+      <div class="filter-group">
+        <label>${f.label}</label>
+        <select id="f-${f.key}">
+          <option value="">— Tous —</option>
+          ${opts}
+        </select>
+      </div>`;
+
+    }).join('');
 }
 
+
+
 function resetFilters() {
-  filterFields.forEach(f=>{const el=document.getElementById('f-'+f.key);if(el)el.value='';});
-  document.getElementById('multiResults').innerHTML='';
+
+  filterFields.forEach(f => {
+
+    const el = document.getElementById('f-' + f.key);
+
+    if (el) el.value = '';
+
+  });
+
+  document.getElementById('multiResults').innerHTML = '';
+
   document.getElementById('multiStatus').style.display='none';
 }
 
+
+
 function runMultiSearch() {
-  if (!dbReady) { showDBLoading('⏳ Données en cours de chargement, veuillez patienter...'); setTimeout(hideDBLoading, 2000); return; }
-  const filters={};
-  filterFields.forEach(f=>{const v=(document.getElementById('f-'+f.key)||{}).value;if(v)filters[f.key]=v.toLowerCase();});
-  const results=[];
-  for(const [acc,s] of Object.entries(DB.strains)){
-    let match=true;
-    for(const [k,v] of Object.entries(filters)){if(!(s[k]||'').toLowerCase().includes(v)){match=false;break;}}
-    if(match)results.push(acc);
+
+  if (!dbReady || !DB) {
+    showDBLoading('⏳ Données en cours de chargement...');
+    return;
   }
+
+
+  const filters = {};
+
+
+  filterFields.forEach(f => {
+
+    const el = document.getElementById('f-' + f.key);
+
+    if (el && el.value) {
+      filters[f.key] = el.value.toLowerCase();
+    }
+
+  });
+
+
+
+  const results=[];
+
+
+  for (const [acc,s] of Object.entries(DB.strains)) {
+
+    let match=true;
+
+
+    for (const [k,v] of Object.entries(filters)) {
+
+      if (!(s[k] || '').toLowerCase().includes(v)) {
+
+        match=false;
+        break;
+
+      }
+
+    }
+
+
+    if(match) results.push(acc);
+
+  }
+
+
+
   const st=document.getElementById('multiStatus');
+
   st.style.display='block';
-  st.textContent=results.length+' souche'+(results.length!==1?'s':'')+' trouvée'+(results.length!==1?'s':'');
-  if(!results.length){document.getElementById('multiResults').innerHTML='<div class="no-results">Aucune souche ne correspond.</div>';return;}
-  document.getElementById('multiResults').innerHTML=results.slice(0,200).map(acc=>{
-    const s=DB.strains[acc];
-    return `<div class="multi-result-row" onclick="openStrainFromMulti('${escId(acc)}')">
-      <span class="multi-acc">${escHtml(acc)}</span>
-      <span class="multi-taxon">${escHtml(s.taxon||s.genus||'—')}</span>
-      <span class="multi-loc">${escHtml(s.locality||s.sampling||'—')}</span>
-    </div>`;
-  }).join('')+(results.length>200?`<div style="text-align:center;padding:12px;font-size:12px;color:#aaa">… et ${results.length-200} autres. Affinez ou exportez.</div>`:'');
-  window._multiResults=results;
+
+  st.textContent =
+    results.length +
+    ' souche' +
+    (results.length!==1?'s':'') +
+    ' trouvée' +
+    (results.length!==1?'s':'');
+
+
+
+  if(!results.length){
+
+    document.getElementById('multiResults').innerHTML =
+      '<div class="no-results">Aucune souche ne correspond.</div>';
+
+    return;
+  }
+
+
+
+  document.getElementById('multiResults').innerHTML =
+    results.slice(0,200).map(acc=>{
+
+      const s=DB.strains[acc];
+
+      return `
+      <div class="multi-result-row"
+           onclick="openStrainFromMulti('${escId(acc)}')">
+
+        <span class="multi-acc">
+          ${escHtml(acc)}
+        </span>
+
+        <span class="multi-taxon">
+          ${escHtml(s.taxon || s.genus || '—')}
+        </span>
+
+        <span class="multi-loc">
+          ${escHtml(s.locality || s.sampling || '—')}
+        </span>
+
+      </div>`;
+
+    }).join('');
+
+
+
+  window._multiResults = results;
 }
+
+
 
 function openStrainFromMulti(accId) {
-  const acc=accId.replace(/__/g,' ');
-  document.getElementById('simpleInput').value=acc;
-  switchTab('simple'); runSimpleSearch();
-  setTimeout(()=>{const c=document.getElementById('card-'+escId(acc));if(c){c.scrollIntoView({behavior:'smooth',block:'start'});toggleCard(escId(acc));}},100);
-}
 
-function exportCSV() {
-  const results=window._multiResults||Object.keys(DB.strains);
-  const cols=['Accession','Autres noms','Taxon','Morphologie','Division','Ordre','Genre','Habitat','Prélèvement','Localité','Projet'];
-  const rows=results.map(acc=>{const s=DB.strains[acc];return[s.accession,s.other_names,s.taxon,s.morphology,s.division,s.order,s.genus,s.habitat,s.sampling,s.locality,s.project].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(',');});
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent([cols.join(','),...rows].join('\n'));
-  a.download='FungiSem_export.csv'; a.click();
-}
+  const acc = accId.replace(/__/g,' ');
 
+  document.getElementById('simpleInput').value = acc;
+
+  switchTab('simple');
+
+  runSimpleSearch();
+
+
+  setTimeout(()=>{
+
+    const c =
+      document.getElementById('card-'+escId(acc));
+
+    if(c){
+
+      c.scrollIntoView({
+        behavior:'smooth',
+        block:'start'
+      });
+
+      toggleCard(escId(acc));
+
+    }
+
+  },100);
+
+}
 // ---- PRIMERS ----
 function showPrimersLive() {
   const q=document.getElementById('primerInput').value.trim().toLowerCase();
