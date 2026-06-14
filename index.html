@@ -442,7 +442,15 @@ function runSimpleSearch() {
     return;
   }
   status.textContent = found.length + ' résultat' + (found.length>1?'s':'') + ' — cliquez pour voir les détails';
-  document.getElementById('simpleResults').innerHTML = found.map(acc => renderStrainCard(acc)).join('');
+  try {
+    const cards = found.map(acc => renderStrainCard(acc));
+    console.log('Cards generated:', cards.length, 'First card length:', cards[0]?.length);
+    document.getElementById('simpleResults').innerHTML = cards.join('');
+    console.log('simpleResults innerHTML length:', document.getElementById('simpleResults').innerHTML.length);
+  } catch(e) {
+    console.error('renderStrainCard error:', e);
+    document.getElementById('simpleResults').innerHTML = '<div class="no-results">Erreur: ' + e.message + '</div>';
+  }
 }
 
 function renderStrainCard(acc) {
