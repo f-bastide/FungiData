@@ -720,7 +720,6 @@ var filterFields = [
 
 var filtersInited = false;
 
-
 function initFilters() {
 
   // sécurité : attendre la DB
@@ -728,16 +727,12 @@ function initFilters() {
     console.warn("initFilters : DB pas encore chargée");
     return;
   }
-
   if (!Array.isArray(filterFields)) {
     console.error("filterFields absent");
     return;
   }
-
   if (filtersInited) return;
   filtersInited = true;
-
-
   const champs = DB.champs || {};
 
   document.getElementById('filtersGrid').innerHTML =
@@ -745,12 +740,13 @@ function initFilters() {
 
       const vals = champs[f.key] || [];
 
-      const opts = vals
-        .filter(v => v && v !== 'None')
-        .map(v =>
-          `<option value="${escHtml(v)}">${escHtml(v)}</option>`
-        )
-        .join('');
+const opts = vals
+  .filter(v => v && v !== 'None')
+  .sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }))
+  .map(v =>
+    `<option value="${escHtml(v)}">${escHtml(v)}</option>`
+  )
+  .join('');
 
       return `
       <div class="filter-group">
@@ -763,8 +759,6 @@ function initFilters() {
 
     }).join('');
 }
-
-
 
 function resetFilters() {
 
@@ -781,61 +775,32 @@ function resetFilters() {
   document.getElementById('multiStatus').style.display='none';
 }
 
-
-
 function runMultiSearch() {
 
   if (!dbReady || !DB) {
     showDBLoading('⏳ Données en cours de chargement...');
     return;
   }
-
-
   const filters = {};
-
-
   filterFields.forEach(f => {
-
     const el = document.getElementById('f-' + f.key);
-
     if (el && el.value) {
       filters[f.key] = el.value.toLowerCase();
     }
-
   });
-
-
-
   const results=[];
-
-
   for (const [acc,s] of Object.entries(DB.strains)) {
-
     let match=true;
-
-
     for (const [k,v] of Object.entries(filters)) {
-
       if (!(s[k] || '').toLowerCase().includes(v)) {
-
         match=false;
         break;
-
       }
-
     }
-
-
     if(match) results.push(acc);
-
   }
-
-
-
   const st=document.getElementById('multiStatus');
-
   st.style.display='block';
-
   st.textContent =
     results.length +
     ' souche' +
@@ -843,31 +808,20 @@ function runMultiSearch() {
     ' trouvée' +
     (results.length!==1?'s':'');
 
-
-
   if(!results.length){
-
     document.getElementById('multiResults').innerHTML =
       '<div class="no-results">Aucune souche ne correspond.</div>';
-
     return;
   }
-
-
-
   document.getElementById('multiResults').innerHTML =
     results.slice(0,200).map(acc=>{
-
       const s=DB.strains[acc];
-
       return `
       <div class="multi-result-row"
            onclick="openStrainFromMulti('${escId(acc)}')">
-
         <span class="multi-acc">
           ${escHtml(acc)}
         </span>
-
         <span class="multi-taxon">
           ${escHtml(s.taxon || s.genus || '—')}
         </span>
@@ -880,43 +834,27 @@ function runMultiSearch() {
 
     }).join('');
 
-
-
   window._multiResults = results;
 }
 
-
-
 function openStrainFromMulti(accId) {
-
   const acc = accId.replace(/__/g,' ');
-
   document.getElementById('simpleInput').value = acc;
-
   switchTab('simple');
-
   runSimpleSearch();
-
-
   setTimeout(()=>{
-
     const c =
       document.getElementById('card-'+escId(acc));
-
     if(c){
-
       c.scrollIntoView({
         behavior:'smooth',
         block:'start'
       });
-
       toggleCard(escId(acc));
-
     }
-
   },100);
-
 }
+
 // ---- PRIMERS ----
 function showPrimersLive() {
   const q=document.getElementById('primerInput').value.trim().toLowerCase();
