@@ -174,6 +174,10 @@ function confirmAdmin() {
     var t2 = setInterval(function(){
       if (typeof _doExport === 'function') { clearInterval(t2); _doExport(); }
     }, 50);
+  } else if (action === 'vider') {
+    var t3 = setInterval(function(){
+      if (typeof _doViderHistorique === 'function') { clearInterval(t3); _doViderHistorique(); }
+    }, 50);
   }
 }
 
@@ -218,11 +222,14 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="header">
   <span class="strain-count" id="totalCount">chargement…</span>
   <span id="syncStatus" style="display:none;font-size:12px;margin-left:12px"></span>
+  <button onclick="adminViderHistorique()" style="background:none;border:0.5px solid #ffb8b8;color:#c00;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer" title="Vider l'historique — Réservé F.B.">🗑️ Vider historique <span style="font-size:10px;opacity:0.7">(Réservé F.B.)</span></button>
   <button onclick="if(typeof loadFromGitHub==='function'&&typeof GH_OWNER!=='undefined')loadFromGitHub();else{var s=document.getElementById('syncStatus');if(s){s.textContent='⏳ Chargement en cours...';s.style.display='block';s.style.color='#888';}}" style="background:none;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;margin-left:8px">🔄 Sync</button>
   <div style="flex:1"></div>
-
+    <button id="updateBtn" onclick="adminAuthUpdate()" style="background:#fff;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px" title="Mettre à jour — Réservé Franck Bastide">
+      📥 Mettre à jour <span style="font-size:10px;color:#aaa;margin-left:4px">(Réservé F.B.)</span>
+    </button>
 </div>
-
+<div id="updateStatus" style="display:none;background:#E1F5EE;border:0.5px solid #b8e0d0;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#0F6E56"></div>
 <div class="tabs">
   <button class="tab active" onclick="switchTab('simple')">Recherche simple</button>
   <button class="tab" onclick="switchTab('multiple')">Recherche multiple</button>
@@ -949,11 +956,51 @@ function hideSyncStatus(){const el=document.getElementById('syncStatus');if(el)e
 
 
 
+// ---- PUSH DATA TO GITHUB ----
+async function pushDataToGitHub(jsonContent) {
+  if (!GH_TOKEN()) return false;
+  try {
+    showSyncStatus('⏳ Publication des nouvelles données...', '#888');
+    // Get current SHA of data.json
+    const check = await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/data.json',
+      {headers:{'Authorization':'token '+GH_TOKEN(),'Accept':'application/vnd.github.v3+json'}});
+    let sha = null;
+    if (check.ok) { const d = await check.json(); sha = d.sha; }
+    
+    const body = {
+      message: 'Mise à jour données FungiSem - ' + new Date().toLocaleString('fr-FR'),
+      content: btoa(unescape(encodeURIComponent(jsonContent)))
+    };
+    if (sha) body.sha = sha;
+    
+    const r = await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/data.json',
+      {method:'PUT', headers:{'Authorization':'token '+GH_TOKEN(),'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'}, body:JSON.stringify(body)});
+    
+    if (r.ok) {
+      showSyncStatus('✅ data.json mis à jour sur GitHub', '#1D9E75');
+      setTimeout(hideSyncStatus, 4000);
+      return true;
+    } else {
+      showSyncStatus('⚠️ Données mises à jour en session (erreur GitHub: '+r.status+')', '#E07B00');
+      setTimeout(hideSyncStatus, 4000);
+      return false;
+    }
+  } catch(e) {
+    showSyncStatus('⚠️ Mise à jour locale uniquement : '+e.message, '#E07B00');
+    setTimeout(hideSyncStatus, 4000);
+    return false;
+  }
+}
+
 // ---- ADMIN FUNCTIONS ----
 var ADMIN_PWD = 'Belette0330.';
 
 // _adminCallback declared in head
 
+function adminAuthUpdate() {
+  _adminAction = 'update';
+  openAdminModal();
+}
 
 // _adminAction declared in head
 
@@ -1007,20 +1054,94 @@ function _doExport() {
 }
 
 // ---- UPDATE ----
+function handleUpdate(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusDiv = document.getElementById('updateStatus');
+  statusDiv.style.display = 'block';
+  statusDiv.textContent = '⏳ Lecture du fichier JSON en cours…';
 
-function exportCSV() {
-  const results = window._multiResults || Object.keys(DB.strains);
-  const cols = ['Accession','Autres noms','Taxon','Morphologie','Division','Ordre','Genre','Habitat','Prélèvement','Localité','Projet'];
-  const rows = results.map(acc => {
-    const s = DB.strains[acc];
-    return [s.accession, s.other_names, s.taxon, s.morphology, s.division, s.order, s.genus, s.habitat, s.sampling, s.locality, s.project]
-      .map(v => '"' + (v||'').replace(/"/g, '""') + '"').join(',');
-  });
-  const csv = [cols.join(','), ...rows].join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
-  a.download = 'FungiSem_export.csv';
-  a.click();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const newData = JSON.parse(e.target.result);
+
+      // Validate structure
+      if (!newData.strains || !newData.stocks || !newData.primers) {
+        throw new Error('Structure JSON invalide — utilisez bien le fichier exporté par la macro FungiSem_ExportJSON.');
+      }
+
+      // Update DB in place
+      DB.strains = newData.strains;
+      DB.stocks = newData.stocks;
+      DB.sequences = newData.sequences || DB.sequences;
+      DB.literature = newData.literature || DB.literature;
+      DB.primers = newData.primers;
+      DB.search_idx = newData.search_idx || DB.search_idx;
+      if (newData.champs) DB.champs = newData.champs;
+
+      // Reset caches
+      filtersInited = false;
+      window._seqStore = {};
+
+      // Update count
+      const count = Object.keys(DB.strains).length;
+      document.getElementById('totalCount').textContent = count + ' souches';
+
+      // Clear current results
+      document.getElementById('simpleResults').innerHTML = '';
+      document.getElementById('simpleStatus').textContent = '';
+      document.getElementById('multiResults').innerHTML = '';
+
+      const now = new Date().toLocaleString('fr-FR');
+      statusDiv.innerHTML = `<strong>✅ Mise à jour réussie !</strong> ${count} souches chargées · ${now}
+        <button onclick="document.getElementById('updateStatus').style.display='none'" style="margin-left:12px;background:none;border:0.5px solid #b8e0d0;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;color:#0F6E56">Fermer</button>`;
+    } catch(err) {
+      statusDiv.innerHTML = `<strong>❌ Erreur :</strong> ${err.message}
+        <button onclick="document.getElementById('updateStatus').style.display='none'" style="margin-left:12px;background:none;border:0.5px solid #ffb8b8;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;color:#c00">Fermer</button>`;
+      statusDiv.style.background = '#fff0f0';
+      statusDiv.style.borderColor = '#ffb8b8';
+      statusDiv.style.color = '#c00';
+    }
+    input.value = '';
+  };
+  reader.onerror = function() {
+    statusDiv.textContent = '❌ Impossible de lire le fichier.';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+
+function adminViderHistorique() {
+  _adminAction = 'vider';
+  openAdminModal();
+}
+
+async function _doViderHistorique() {
+  if (GH_TOKEN()) {
+    try {
+      showSyncStatus('⏳ Suppression sur GitHub...', '#888');
+      const check = await fetch(
+        'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_FILE,
+        {headers: {'Authorization': 'token ' + GH_TOKEN(), 'Accept': 'application/vnd.github.v3+json'}}
+      );
+      if (check.ok) {
+        const d = await check.json();
+        const del = await fetch(
+          'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_FILE,
+          {method: 'DELETE', headers: {'Authorization': 'token ' + GH_TOKEN(), 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json'},
+           body: JSON.stringify({message: 'Historique vidé - ' + new Date().toLocaleString('fr-FR'), sha: d.sha})}
+        );
+        if (del.ok) showSyncStatus('✅ modifications.json supprimé sur GitHub', '#1D9E75');
+        else showSyncStatus('⚠️ Erreur GitHub: ' + del.status, '#E07B00');
+      } else if (check.status === 404) {
+        showSyncStatus('✅ Déjà vide sur GitHub', '#1D9E75');
+      }
+      setTimeout(hideSyncStatus, 3000);
+    } catch(e) { showSyncStatus('⚠️ ' + e.message, '#E07B00'); setTimeout(hideSyncStatus, 3000); }
+  }
+  stockMods = {}; editHistory = []; exportedCount = 0; githubSHA = null;
+  saveLocal(); updateExportBar(); renderHistory();
 }
 
 // ---- LOGIN ----
@@ -1088,7 +1209,13 @@ loadFromGitHub();
       </div>
     </div>
     <!-- Step 2: file picker (shown after correct password) -->
-    
+    <div id="adminStep2" style="display:none">
+      <p style="font-size:13px;color:#666;margin-bottom:12px">Mot de passe validé. Sélectionnez le fichier :</p>
+      <input type="file" id="updateFileInput" accept=".json" style="display:none" onchange="handleUpdate(this);closeAdminModal()">
+      <label for="updateFileInput" class="btn" style="display:inline-block;cursor:pointer;margin-bottom:8px">📂 Choisir fungisem_data.json</label>
+      <div class="admin-modal-actions">
+        <button class="btn-cancel" onclick="closeAdminModal()">Annuler</button>
+      </div>
     </div>
     <!-- Export button (shown after correct password for export action) -->
     <div id="adminStep3" style="display:none">
