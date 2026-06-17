@@ -1262,7 +1262,9 @@ loadFromGitHub();
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+
 // ---- CARTE OPENSTREETMAP ----
 
 function toggleMap() {
@@ -1354,6 +1356,7 @@ function openStrainFromMap(acc) {
     if (card) { card.scrollIntoView({behavior:'smooth',block:'start'}); toggleCard(escId(acc)); }
   }, 200);
 }
+
 
 </script>
 </body>
