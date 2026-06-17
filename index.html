@@ -193,6 +193,19 @@ document.addEventListener('DOMContentLoaded', function() {
   } catch(e){}
 });
 </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+  #mapContainer { display:none; margin-top:16px; }
+  #mapContainer.show { display:block; }
+  #fungisemMap { height:420px; border-radius:10px; border:0.5px solid #e0e0d8; }
+  .map-toggle-btn { background:none; border:0.5px solid #d0d0c8; color:#444; border-radius:8px; padding:9px 14px; font-size:13px; cursor:pointer; font-family:inherit; }
+  .map-toggle-btn.active { background:#1D9E75; color:#fff; border-color:#1D9E75; }
+  .leaflet-popup-content { font-family:-apple-system,sans-serif; font-size:13px; }
+  .map-popup-title { font-weight:600; color:#1D9E75; margin-bottom:4px; }
+  .map-popup-list { max-height:120px; overflow-y:auto; font-size:12px; color:#444; }
+  .map-popup-list a { color:#1D9E75; text-decoration:none; cursor:pointer; display:block; padding:2px 0; }
+  .map-popup-list a:hover { text-decoration:underline; }
+  </style>
 </head>
 <body>
 <div id="loginScreen" class="login-screen">
@@ -206,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <input type="password" id="pwdInput" placeholder="••••••••" onkeydown="if(event.key==='Enter') checkPassword()" autofocus />
     </div>
     <div class="login-field" style="margin-bottom:12px">
-      <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">Token GitHub <span style="color:#aaa;font-size:10px">(si modification stock)</span></label>
+      <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">Token GitHub <span style="color:#aaa;font-size:10px">(optionnel)</span></label>
       <input type="password" id="ghTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="width:100%;padding:8px 10px;border:0.5px solid #d0d0c8;border-radius:7px;font-size:13px" />
     </div>
     <button class="login-btn" onclick="checkPassword()">Accéder</button>
@@ -270,7 +283,13 @@ title="Vider l'historique — Réservé F.B.">
       <button class="btn-outline" onclick="exportCSV()">⬇ Exporter CSV</button>
     </div>
   </div>
-  <div id="multiStatus" style="display:none;font-size:13px;color:#666;margin-bottom:10px"></div>
+  <div id="multiStatus" style="display:none;font-size:13px;color:#666;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+    <span id="multiCount"></span>
+    <button class="map-toggle-btn" id="mapToggleBtn" onclick="toggleMap()" style="display:none">🗺️ Voir sur la carte</button>
+  </div>
+  <div id="mapContainer">
+    <div id="fungisemMap"></div>
+  </div>
   <div id="multiResults"></div>
 </div>
 
@@ -322,6 +341,10 @@ title="Vider l'historique — Réservé F.B.">
 </div>
 
 <script>
+var LOCALITY_COORDS = {" Babtai": {"lat": 55.0893, "lon": 23.6395}, "Ain": {"lat": 46.07, "lon": 5.34}, "Alenquer": {"lat": 39.0552, "lon": -9.0079}, "Alger": {"lat": 36.7372, "lon": 3.0865}, "Algeria": {"lat": 28.0339, "lon": 1.6596}, "Angers": {"lat": 47.4784, "lon": -0.5632}, "Ars-en-Ré": {"lat": 46.2035, "lon": -1.5117}, "Auckland": {"lat": -36.8485, "lon": 174.7633}, "Aude": {"lat": 43.21, "lon": 2.35}, "Australia": {"lat": -25.2744, "lon": 133.7751}, "Auvergne-Rhône-Alpes": {"lat": 45.75, "lon": 4.85}, "Azeitão": {"lat": 38.5213, "lon": -8.9853}, "Aïn Témouchent": {"lat": 35.3, "lon": -1.14}, "Babtai": {"lat": 55.0893, "lon": 23.6395}, "Beaucouzé": {"lat": 47.48, "lon": -0.65}, "Belgium": {"lat": 50.8503, "lon": 4.3517}, "Bergères-lès-Vertus": {"lat": 48.93, "lon": 4.0}, "Berze": {"lat": 46.42, "lon": 4.63}, "Berze ": {"lat": 46.42, "lon": 4.63}, "Biskra": {"lat": 34.85, "lon": 5.73}, "Bouin": {"lat": 46.9711, "lon": -1.9897}, "Bourgogne-Franche-Comté": {"lat": 47.0, "lon": 5.0}, "Brazil": {"lat": -14.235, "lon": -51.9253}, "Bretagne": {"lat": 48.2, "lon": -2.9}, "Bulgaria": {"lat": 42.7339, "lon": 25.4858}, "Calvados": {"lat": 49.18, "lon": -0.35}, "Canada": {"lat": 56.1304, "lon": -106.3468}, "Cantal": {"lat": 45.05, "lon": 2.55}, "Centre-Val de Loire": {"lat": 47.5, "lon": 1.7}, "Charente": {"lat": 45.6, "lon": 0.15}, "Charente-Maritime": {"lat": 45.75, "lon": -0.63}, "China": {"lat": 35.8617, "lon": 104.1954}, "Corrèze": {"lat": 45.35, "lon": 1.87}, "Côte-d'Or": {"lat": 47.32, "lon": 5.04}, "Croatia": {"lat": 45.1, "lon": 15.2}, "Czech Republic": {"lat": 49.8175, "lon": 15.473}, "Denmark": {"lat": 56.2639, "lon": 9.5018}, "Deux-Sèvres": {"lat": 46.55, "lon": -0.33}, "Dordogne": {"lat": 45.11, "lon": 0.74}, "Drôme": {"lat": 44.73, "lon": 5.0}, "Essonne": {"lat": 48.63, "lon": 2.24}, "Eure": {"lat": 49.07, "lon": 1.19}, "Eure-et-Loir": {"lat": 48.45, "lon": 1.49}, "Finland": {"lat": 61.9241, "lon": 25.7482}, "France": {"lat": 46.6034, "lon": 1.8883}, "Gard": {"lat": 43.84, "lon": 4.36}, "Germany": {"lat": 51.1657, "lon": 10.4515}, "Gers": {"lat": 43.65, "lon": 0.59}, "Gironde": {"lat": 44.84, "lon": -0.58}, "Grand Est": {"lat": 48.7, "lon": 6.2}, "Greece": {"lat": 39.0742, "lon": 21.8243}, "Hauts-de-France": {"lat": 50.0, "lon": 2.5}, "Hauts-de-Seine": {"lat": 48.83, "lon": 2.22}, "Haute-Garonne": {"lat": 43.6, "lon": 1.44}, "Haute-Loire": {"lat": 45.05, "lon": 3.88}, "Haute-Saône": {"lat": 47.62, "lon": 6.15}, "Haute-Vienne": {"lat": 45.84, "lon": 1.27}, "Hérault": {"lat": 43.6, "lon": 3.88}, "Hungary": {"lat": 47.1625, "lon": 19.5033}, "Île-de-France": {"lat": 48.65, "lon": 2.34}, "Ille-et-Vilaine": {"lat": 48.11, "lon": -1.68}, "India": {"lat": 20.5937, "lon": 78.9629}, "Iran": {"lat": 32.4279, "lon": 53.688}, "Ireland": {"lat": 53.1424, "lon": -7.6921}, "Isère": {"lat": 45.19, "lon": 5.72}, "Israel": {"lat": 31.0461, "lon": 34.8516}, "Italy": {"lat": 41.8719, "lon": 12.5674}, "Japan": {"lat": 36.2048, "lon": 138.2529}, "Jura": {"lat": 46.67, "lon": 5.56}, "Kenya": {"lat": -0.0236, "lon": 37.9062}, "Latvia": {"lat": 56.8796, "lon": 24.6032}, "Lithuania": {"lat": 55.1694, "lon": 23.8813}, "Loir-et-Cher": {"lat": 47.59, "lon": 1.32}, "Loire": {"lat": 45.44, "lon": 4.39}, "Loire-Atlantique": {"lat": 47.2, "lon": -1.5}, "Loiret": {"lat": 47.9, "lon": 2.0}, "Lot-et-Garonne": {"lat": 44.35, "lon": 0.34}, "Lozère": {"lat": 44.52, "lon": 3.5}, "Lyon": {"lat": 45.764, "lon": 4.8357}, "Maine-et-Loire": {"lat": 47.4667, "lon": -0.5667}, "Manche": {"lat": 49.12, "lon": -1.21}, "Marne": {"lat": 49.04, "lon": 4.0}, "Marseille": {"lat": 43.2965, "lon": 5.3698}, "Mayenne": {"lat": 48.3, "lon": -0.62}, "Meuse": {"lat": 48.99, "lon": 5.38}, "Mexico": {"lat": 23.6345, "lon": -102.5528}, "Montpellier": {"lat": 43.6108, "lon": 3.8767}, "Morocco": {"lat": 31.7917, "lon": -7.0926}, "Moselle": {"lat": 49.12, "lon": 6.18}, "Nantes": {"lat": 47.2184, "lon": -1.5536}, "Netherlands": {"lat": 52.1326, "lon": 5.2913}, "New Zealand": {"lat": -40.9006, "lon": 174.886}, "Nièvre": {"lat": 47.0, "lon": 3.5}, "Nord": {"lat": 50.63, "lon": 3.07}, "Normandie": {"lat": 48.8, "lon": 0.2}, "Nouvelle-Aquitaine": {"lat": 44.9, "lon": 0.5}, "Occitanie": {"lat": 43.6, "lon": 2.0}, "Orne": {"lat": 48.42, "lon": 0.09}, "Paris": {"lat": 48.8566, "lon": 2.3522}, "Pas-de-Calais": {"lat": 50.48, "lon": 2.22}, "Pays de la Loire": {"lat": 47.76, "lon": -0.33}, "Poland": {"lat": 51.9194, "lon": 19.1451}, "Portugal": {"lat": 39.3999, "lon": -8.2245}, "Puy-de-Dôme": {"lat": 45.77, "lon": 3.08}, "Pyrénées-Orientales": {"lat": 42.7, "lon": 2.89}, "Rennes": {"lat": 48.1173, "lon": -1.6778}, "Rhône": {"lat": 45.75, "lon": 4.85}, "Romania": {"lat": 45.9432, "lon": 24.9668}, "Saône-et-Loire": {"lat": 46.63, "lon": 4.83}, "Sarthe": {"lat": 47.98, "lon": 0.19}, "Seine-Maritime": {"lat": 49.44, "lon": 1.09}, "Seine-et-Marne": {"lat": 48.63, "lon": 2.91}, "Somme": {"lat": 49.9, "lon": 2.3}, "South Africa": {"lat": -30.5595, "lon": 22.9375}, "Spain": {"lat": 40.4637, "lon": -3.7492}, "Strasbourg": {"lat": 48.5734, "lon": 7.7521}, "Sweden": {"lat": 60.1282, "lon": 18.6435}, "Switzerland": {"lat": 46.8182, "lon": 8.2275}, "Tarn": {"lat": 43.79, "lon": 2.15}, "Toulouse": {"lat": 43.6047, "lon": 1.4442}, "Tunisia": {"lat": 33.8869, "lon": 9.5375}, "Turkey": {"lat": 38.9637, "lon": 35.2433}, "USA": {"lat": 37.0902, "lon": -95.7129}, "UK": {"lat": 55.3781, "lon": -3.436}, "United Kingdom": {"lat": 55.3781, "lon": -3.436}, "Val-de-Marne": {"lat": 48.77, "lon": 2.46}, "Var": {"lat": 43.47, "lon": 6.15}, "Vaucluse": {"lat": 43.95, "lon": 5.09}, "Vendée": {"lat": 46.65, "lon": -1.43}, "Vienne": {"lat": 46.58, "lon": 0.34}, "Yonne": {"lat": 47.8, "lon": 3.57}, "Blida": {"lat": 36.47, "lon": 2.83}, "Bonne-Anse": {"lat": 45.55, "lon": -1.12}, "Bouchemaine": {"lat": 47.43, "lon": -0.65}, "Bouches-du-Rhône": {"lat": 43.53, "lon": 5.45}, "Bouin (Vendée)": {"lat": 46.97, "lon": -1.99}, "Boumerdès": {"lat": 36.77, "lon": 3.48}, "Brain-sur-l'Authion": {"lat": 47.43, "lon": -0.46}, "Béjaïa": {"lat": 36.75, "lon": 5.07}, "California": {"lat": 36.7783, "lon": -119.4179}, "Centre": {"lat": 47.5, "lon": 1.7}, "Chalonnes-sur-Loire": {"lat": 47.35, "lon": -0.76}, "Cher": {"lat": 47.06, "lon": 2.4}, "Colombia": {"lat": 4.5709, "lon": -74.2973}, "Crozon": {"lat": 48.24, "lon": -4.49}, "Daugmale": {"lat": 56.75, "lon": 24.37}, "Dirinon": {"lat": 48.41, "lon": -4.27}, "Djutsitsa (Cameroun)": {"lat": 5.5, "lon": 10.5}, "Domaine de l'étang (Avrillé)": {"lat": 47.52, "lon": -0.6}, "Etang Saint Nicolas (Angers)": {"lat": 47.47, "lon": -0.55}, "Ethiopia": {"lat": 9.145, "lon": 40.489}, "Fleuré (Vienne)": {"lat": 46.47, "lon": 0.47}, "Florida": {"lat": 27.6648, "lon": -81.5158}, "Garennes-sur-Loire": {"lat": 47.37, "lon": -0.56}, "Guatemala": {"lat": 15.7835, "lon": -90.2308}, "Haut-Rhin": {"lat": 47.75, "lon": 7.34}, "Herikhuizerweg": {"lat": 52.08, "lon": 5.14}, "Iecava": {"lat": 56.6, "lon": 24.21}, "Indonesia": {"lat": -0.7893, "lon": 113.9213}, "Indre-et-Loire": {"lat": 47.36, "lon": 0.69}, "Jaunsvirlauka": {"lat": 56.64, "lon": 23.84}, "Jogeva": {"lat": 58.74, "lon": 26.4}, "Kaernten": {"lat": 46.72, "lon": 14.18}, "Karkiskes": {"lat": 54.9, "lon": 24.28}, "Kern": {"lat": 35.34, "lon": -118.73}, "Koimula": {"lat": 57.1, "lon": 25.8}, "La Chapelle-Basse-Mer": {"lat": 47.28, "lon": -1.36}, "La Forest-Landerneau": {"lat": 48.44, "lon": -4.25}, "La Plaine-sur-Mer": {"lat": 47.15, "lon": -2.0}, "La Prée": {"lat": 46.16, "lon": -1.38}, "Landerneau": {"lat": 48.45, "lon": -4.25}, "Landes": {"lat": 44.0, "lon": -0.83}, "Lathumse Veerweg": {"lat": 51.88, "lon": 5.38}, "Le Croisic": {"lat": 47.3, "lon": -2.51}, "Lemmatsi": {"lat": 58.5, "lon": 25.5}, "Les Ponts-de-Cé": {"lat": 47.42, "lon": -0.52}, "Livberze": {"lat": 56.75, "lon": 23.87}, "Longuenée-en-Anjou": {"lat": 47.58, "lon": -0.73}, "Malveira da Serra": {"lat": 38.74, "lon": -9.47}, "Mascara": {"lat": 35.4, "lon": 0.14}, "Mexique": {"lat": 23.6345, "lon": -102.5528}, "Mostaganem": {"lat": 35.93, "lon": 0.09}, "Mount Vechernyaya": {"lat": 70.77, "lon": 11.83}, "Novolazarevskaya": {"lat": -70.77, "lon": 11.83}, "Oeiras": {"lat": 38.69, "lon": -9.3}, "Ombrée d'anjou": {"lat": 47.73, "lon": -0.98}, "Oran": {"lat": 35.69, "lon": -0.63}, "Oran ": {"lat": 35.69, "lon": -0.63}, "Oued Rhiou": {"lat": 35.96, "lon": 0.92}, "Oulhaça El Gheraba": {"lat": 35.46, "lon": -1.0}, "Parc des poumonts verts (Avrillé)": {"lat": 47.52, "lon": -0.6}, "Pays de la loire": {"lat": 47.76, "lon": -0.33}, "Plougastel-Daoulas": {"lat": 48.37, "lon": -4.37}, "Plouédern": {"lat": 48.47, "lon": -4.2}, "Remchi": {"lat": 35.07, "lon": -1.43}, "Rietganssingel": {"lat": 51.59, "lon": 4.78}, "Ringaudai": {"lat": 55.63, "lon": 22.01}, "Rives-du-Loir-en-Anjou": {"lat": 47.57, "lon": -0.46}, "Saint-Barthélemy-d'Anjou": {"lat": 47.46, "lon": -0.49}, "Saint-Michel-Chef-Chef": {"lat": 47.17, "lon": -2.13}, "Sainte-Gemmes-sur-Loire": {"lat": 47.43, "lon": -0.54}, "Sidi Bel Abbès": {"lat": 35.19, "lon": -0.63}, "Stockholm": {"lat": 59.3293, "lon": 18.0686}, "Sétif": {"lat": 36.19, "lon": 5.41}, "Thailand": {"lat": 15.87, "lon": 100.99}, "Tipaza": {"lat": 36.59, "lon": 2.45}, "Tizi Ouzou": {"lat": 36.71, "lon": 4.05}, "Trélazé": {"lat": 47.45, "lon": -0.47}, "United States of America": {"lat": 37.0902, "lon": -95.7129}, "Vancouver": {"lat": 49.2827, "lon": -123.1207}, "Vedu": {"lat": 57.1, "lon": 25.3}, "Vertus": {"lat": 48.9, "lon": 4.0}, "Virbaliskiai": {"lat": 54.8, "lon": 23.9}, "Vircava": {"lat": 56.58, "lon": 23.86}, "Vix (Vendée)": {"lat": 46.37, "lon": -0.88}, "Évora": {"lat": 38.57, "lon": -7.91}};
+var _leafletMap = null;
+var _mapMarkers = [];
+
 var DB = null;
 var dbReady = false;
 
@@ -773,6 +796,10 @@ const opts = vals
 }
 
 function resetFilters() {
+  var mapBtn = document.getElementById('mapToggleBtn');
+  if (mapBtn) mapBtn.style.display = 'none';
+  var mapContainer = document.getElementById('mapContainer');
+  if (mapContainer) mapContainer.classList.remove('show');
 
   filterFields.forEach(f => {
 
@@ -812,13 +839,13 @@ function runMultiSearch() {
     if(match) results.push(acc);
   }
   const st=document.getElementById('multiStatus');
-  st.style.display='block';
-  st.textContent =
-    results.length +
-    ' souche' +
-    (results.length!==1?'s':'') +
-    ' trouvée' +
-    (results.length!==1?'s':'');
+  st.style.display='flex';
+  var countEl = document.getElementById('multiCount');
+  if (countEl) countEl.textContent = results.length + ' souche' + (results.length!==1?'s':'') + ' trouvée' + (results.length!==1?'s':'');
+  var mapBtn = document.getElementById('mapToggleBtn');
+  if (mapBtn) mapBtn.style.display = results.length > 0 ? 'block' : 'none';
+  // Refresh map if already open
+  if (document.getElementById('mapContainer').classList.contains('show')) renderMap(results);
 
   if(!results.length){
     document.getElementById('multiResults').innerHTML =
@@ -1235,5 +1262,99 @@ loadFromGitHub();
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+// ---- CARTE OPENSTREETMAP ----
+
+function toggleMap() {
+  var container = document.getElementById('mapContainer');
+  var btn = document.getElementById('mapToggleBtn');
+  var isOpen = container.classList.contains('show');
+  if (isOpen) {
+    container.classList.remove('show');
+    btn.textContent = '🗺️ Voir sur la carte';
+    btn.classList.remove('active');
+  } else {
+    container.classList.add('show');
+    btn.textContent = '🗺️ Masquer la carte';
+    btn.classList.add('active');
+    renderMap(window._multiResults || []);
+  }
+}
+
+function renderMap(accs) {
+  if (typeof L === 'undefined') { setTimeout(function(){ renderMap(accs); }, 300); return; }
+  if (!_leafletMap) {
+    _leafletMap = L.map('fungisemMap').setView([46.6, 1.88], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 18
+    }).addTo(_leafletMap);
+  }
+  _mapMarkers.forEach(function(m){ _leafletMap.removeLayer(m); });
+  _mapMarkers = [];
+
+  var byLocality = {};
+  accs.forEach(function(acc) {
+    var s = DB.strains[acc];
+    var loc = s ? s.locality : null;
+    if (!loc || loc === 'None' || loc === 'False' || loc === '') return;
+    if (!byLocality[loc]) byLocality[loc] = [];
+    byLocality[loc].push(acc);
+  });
+
+  var bounds = [];
+  Object.keys(byLocality).forEach(function(loc) {
+    var locAccs = byLocality[loc];
+    var c = LOCALITY_COORDS[loc];
+    if (!c) return;
+    var lat = c.lat + (Math.random()-0.5)*0.01;
+    var lon = c.lon + (Math.random()-0.5)*0.01;
+    var count = locAccs.length;
+    var color = count === 1 ? '#1D9E75' : count < 5 ? '#0F6E56' : '#07432F';
+    var size = count === 1 ? 28 : count < 5 ? 34 : 40;
+
+    var icon = L.divIcon({
+      className: '',
+      html: '<div style="background:'+color+';color:#fff;border-radius:50%;width:'+size+'px;height:'+size+'px;display:flex;align-items:center;justify-content:center;font-size:'+(count>9?11:13)+'px;font-weight:600;font-family:sans-serif;box-shadow:0 2px 6px rgba(0,0,0,0.3);border:2px solid #fff">'+count+'</div>',
+      iconSize: [size, size],
+      iconAnchor: [size/2, size/2]
+    });
+
+    var strainList = locAccs.slice(0,20).map(function(acc){
+      var s = DB.strains[acc];
+      var taxon = s && s.taxon ? ' — <em>'+escHtml(s.taxon)+'</em>' : '';
+      return '<a style="color:#1D9E75;text-decoration:none;cursor:pointer;display:block;padding:2px 0" onclick="openStrainFromMap(''+acc.replace(/'/g,"\\'")+'')">' + escHtml(acc) + taxon + '</a>';
+    }).join('');
+    var moreText = locAccs.length > 20 ? '<div style="color:#aaa;font-size:11px;margin-top:4px">… et '+(locAccs.length-20)+' autres</div>' : '';
+
+    var popup = '<div style="font-weight:600;color:#1D9E75;margin-bottom:4px">📍 '+escHtml(loc)+'</div>'
+      + '<div style="font-size:11px;color:#888;margin-bottom:6px">'+count+' souche'+(count>1?'s':'')+'</div>'
+      + '<div style="max-height:140px;overflow-y:auto;font-size:12px;color:#444">'+strainList+moreText+'</div>';
+
+    var marker = L.marker([lat, lon], {icon: icon})
+      .addTo(_leafletMap)
+      .bindPopup(popup, {maxWidth: 280});
+    _mapMarkers.push(marker);
+    bounds.push([lat, lon]);
+  });
+
+  if (bounds.length > 0) {
+    _leafletMap.fitBounds(bounds, {padding: [40,40], maxZoom: 10});
+    setTimeout(function(){ _leafletMap.invalidateSize(); }, 100);
+  }
+}
+
+function openStrainFromMap(acc) {
+  if (_leafletMap) _leafletMap.closePopup();
+  document.getElementById('simpleInput').value = acc;
+  switchTab('simple');
+  runSimpleSearch();
+  setTimeout(function(){
+    var card = document.getElementById('card-'+escId(acc));
+    if (card) { card.scrollIntoView({behavior:'smooth',block:'start'}); toggleCard(escId(acc)); }
+  }, 200);
+}
+
+</script>
 </body>
 </html>
