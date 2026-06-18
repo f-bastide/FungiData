@@ -74,7 +74,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .multi-result-row:hover{border-color:#1D9E75}
 .multi-acc{font-weight:500;color:#1D9E75;min-width:130px}
 .multi-taxon{font-style:italic;color:#444;flex:1;margin:0 12px}
-.multi-loc{color:#888;font-size:12px;min-width:100px;text-align:right}
+.multi-loc{width:180px;flex:none;color:#555;}
+.multi-sampling{width:180px;flex:none;color:#777;font-size:12px;padding-left:15px;}
+
 .primer-result{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#fff;border-radius:8px;border:0.5px solid #e0e0d8;margin-bottom:6px;font-size:13px}
 .primer-name{font-weight:600;color:#333;min-width:120px}
 .primer-seq{font-family:'Courier New',monospace;font-size:11px;color:#888;flex:1;margin:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -97,6 +99,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .export-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f0faf6;border-radius:8px;border:0.5px solid #b8e0d0;margin-bottom:16px}
 .export-bar-text{font-size:13px;color:#0F6E56}
 .pending-badge{background:#E07B00;color:#fff;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600;margin-left:6px}
+
 
 .login-screen{position:fixed;inset:0;background:#2d5a3d;display:flex;align-items:center;justify-content:center;z-index:9999}
 .login-box{background:#fff;border-radius:16px;padding:32px;width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
@@ -855,21 +858,27 @@ function runMultiSearch() {
   document.getElementById('multiResults').innerHTML =
     results.slice(0,200).map(acc=>{
       const s=DB.strains[acc];
-      return `
-      <div class="multi-result-row"
-           onclick="openStrainFromMulti('${escId(acc)}')">
-        <span class="multi-acc">
-          ${escHtml(acc)}
-        </span>
-        <span class="multi-taxon">
-          ${escHtml(s.taxon || s.genus || '—')}
-        </span>
+return `
+<div class="multi-result-row"
+     onclick="openStrainFromMulti('${escId(acc)}')">
 
-        <span class="multi-loc">
-          ${escHtml(s.locality || s.sampling || '—')}
-        </span>
+  <span class="multi-acc">
+    ${escHtml(acc)}
+  </span>
 
-      </div>`;
+  <span class="multi-taxon">
+    ${escHtml(s.taxon || s.genus || '—')}
+  </span>
+
+  <span class="multi-loc">
+    ${escHtml(s.locality || '—')}
+  </span>
+
+  <span class="multi-sampling">
+    ${escHtml(s.sampling || '—')}
+  </span>
+
+</div>`;
 
     }).join('');
 
@@ -1295,23 +1304,42 @@ function renderMap(accs) {
   _mapMarkers.forEach(function(m){ _leafletMap.removeLayer(m); });
   _mapMarkers = [];
 
-  var byLocality = {};
+  // Group strains by GPS position (rounded to 2 decimals to cluster nearby)
+  // Priority: strain lat/lon fields > LOCALITY_COORDS fallback
+  var byPos = {};
   accs.forEach(function(acc) {
     var s = DB.strains[acc];
-    var loc = s ? s.locality : null;
-    if (!loc || loc === 'None' || loc === 'False' || loc === '') return;
-    if (!byLocality[loc]) byLocality[loc] = [];
-    byLocality[loc].push(acc);
+    if (!s) return;
+
+    var lat = null, lon = null;
+
+    // 1. Use direct GPS from strain data (col 30/31)
+    if (s.lat && s.lat !== 'null' && s.lon && s.lon !== 'null') {
+      lat = parseFloat(s.lat);
+      lon = parseFloat(s.lon);
+    }
+    // 2. Fallback to LOCALITY_COORDS lookup
+    else if (s.locality && s.locality !== 'None' && s.locality !== 'False' && s.locality !== '') {
+      var c = LOCALITY_COORDS[s.locality];
+      if (c) { lat = c.lat; lon = c.lon; }
+    }
+
+    if (lat === null || isNaN(lat)) return;
+
+    // Round to 2 decimals for clustering
+    var key = lat.toFixed(2) + '|' + lon.toFixed(2);
+    if (!byPos[key]) byPos[key] = {lat: lat, lon: lon, accs: [], loc: s.locality||''};
+    byPos[key].accs.push(acc);
   });
 
   var bounds = [];
-  Object.keys(byLocality).forEach(function(loc) {
-    var locAccs = byLocality[loc];
-    var c = LOCALITY_COORDS[loc];
-    if (!c) return;
-    var lat = c.lat + (Math.random()-0.5)*0.01;
-    var lon = c.lon + (Math.random()-0.5)*0.01;
-    var count = locAccs.length;
+  var noCoords = 0;
+
+  Object.keys(byPos).forEach(function(key) {
+    var group = byPos[key];
+    var lat = group.lat + (Math.random()-0.5)*0.005;
+    var lon = group.lon + (Math.random()-0.5)*0.005;
+    var count = group.accs.length;
     var color = count === 1 ? '#1D9E75' : count < 5 ? '#0F6E56' : '#07432F';
     var size = count === 1 ? 28 : count < 5 ? 34 : 40;
 
@@ -1322,23 +1350,16 @@ function renderMap(accs) {
       iconAnchor: [size/2, size/2]
     });
 
-var strainList = locAccs.slice(0,20).map(function(acc){
+    var strainList = group.accs.slice(0,20).map(function(acc){
+      var s = DB.strains[acc];
+      var taxon = s && s.taxon ? ' — <em>'+escHtml(s.taxon)+'</em>' : '';
+      return '<a style="color:#1D9E75;text-decoration:none;cursor:pointer;display:block;padding:2px 0" onclick="openStrainFromMap(''+acc.replace(/'/g,"\\'")+'')">' + escHtml(acc) + taxon + '</a>';
+    }).join('');
+    var moreText = group.accs.length > 20 ? '<div style="color:#aaa;font-size:11px;margin-top:4px">… et '+(group.accs.length-20)+' autres</div>' : '';
+    var locLabel = group.loc ? '<div style="font-size:11px;color:#888;margin-bottom:4px">📍 '+escHtml(group.loc)+'</div>' : '';
 
-  var s = DB.strains[acc];
-  var taxon = s && s.taxon ? ' — <em>'+escHtml(s.taxon)+'</em>' : '';
-
-  return '<a style="color:#1D9E75;text-decoration:none;cursor:pointer;display:block;padding:2px 0" onclick="openStrainFromMap(\'' 
-    + escId(acc) 
-    + '\')">' 
-    + escHtml(acc) 
-    + taxon 
-    + '</a>';
-
-}).join('');
-    var moreText = locAccs.length > 20 ? '<div style="color:#aaa;font-size:11px;margin-top:4px">… et '+(locAccs.length-20)+' autres</div>' : '';
-
-    var popup = '<div style="font-weight:600;color:#1D9E75;margin-bottom:4px">📍 '+escHtml(loc)+'</div>'
-      + '<div style="font-size:11px;color:#888;margin-bottom:6px">'+count+' souche'+(count>1?'s':'')+'</div>'
+    var popup = '<div style="font-weight:600;color:#1D9E75;margin-bottom:2px">'+count+' souche'+(count>1?'s':'')+'</div>'
+      + locLabel
       + '<div style="max-height:140px;overflow-y:auto;font-size:12px;color:#444">'+strainList+moreText+'</div>';
 
     var marker = L.marker([lat, lon], {icon: icon})
@@ -1348,11 +1369,28 @@ var strainList = locAccs.slice(0,20).map(function(acc){
     bounds.push([lat, lon]);
   });
 
+  // Count strains without coords
+  noCoords = accs.length - Object.values(byPos).reduce(function(sum,g){return sum+g.accs.length;}, 0);
+
+  // Update status
+  var mapStatus = document.getElementById('mapStatus');
+  if (!mapStatus) {
+    mapStatus = document.createElement('div');
+    mapStatus.id = 'mapStatus';
+    mapStatus.style.cssText = 'font-size:12px;color:#888;padding:6px 0;text-align:center';
+    var mc = document.getElementById('mapContainer');
+    if (mc) mc.insertBefore(mapStatus, mc.firstChild);
+  }
+  mapStatus.textContent = _mapMarkers.length + ' point(s) affichés' + (noCoords > 0 ? ' · ' + noCoords + ' souche(s) sans coordonnées GPS' : '');
+
   if (bounds.length > 0) {
-    _leafletMap.fitBounds(bounds, {padding: [40,40], maxZoom: 10});
+    _leafletMap.fitBounds(bounds, {padding: [40,40], maxZoom: 12});
     setTimeout(function(){ _leafletMap.invalidateSize(); }, 100);
+  } else {
+    mapStatus.textContent = 'Aucune coordonnée GPS disponible pour ces souches.';
   }
 }
+
 
 function openStrainFromMap(acc) {
   if (_leafletMap) _leafletMap.closePopup();
