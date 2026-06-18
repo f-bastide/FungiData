@@ -1353,7 +1353,7 @@ function renderMap(accs) {
     var strainList = group.accs.slice(0,20).map(function(acc){
       var s = DB.strains[acc];
       var taxon = s && s.taxon ? ' — <em>'+escHtml(s.taxon)+'</em>' : '';
-      return '<a style="color:#1D9E75;text-decoration:none;cursor:pointer;display:block;padding:2px 0" onclick="openStrainFromMap(''+acc.replace(/'/g,"\\'")+'')">' + escHtml(acc) + taxon + '</a>';
+      return '<a style="color:#1D9E75;text-decoration:none;cursor:pointer;display:block;padding:2px 0" onclick="openStrainFromMap(\''+ acc.replace(/'/g,"\\'")+'\')">' + escHtml(acc) + taxon  + '</a>';
     }).join('');
     var moreText = group.accs.length > 20 ? '<div style="color:#aaa;font-size:11px;margin-top:4px">… et '+(group.accs.length-20)+' autres</div>' : '';
     var locLabel = group.loc ? '<div style="font-size:11px;color:#888;margin-bottom:4px">📍 '+escHtml(group.loc)+'</div>' : '';
