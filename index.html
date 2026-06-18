@@ -19,6 +19,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .search-row{display:flex;gap:8px;margin-bottom:12px}
 .search-row input{flex:1;padding:9px 12px;border:0.5px solid #d0d0c8;border-radius:8px;font-size:14px;font-family:inherit;outline:none}
 .search-row input:focus{border-color:#1D9E75;box-shadow:0 0 0 2px #1D9E7522}
+#simpleInput {width: 100%;box-sizing: border-box;}
 .btn{background:#1D9E75;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity 0.15s}
 .btn:hover{opacity:0.85}
 .btn-sm{padding:5px 12px;font-size:12px;border-radius:6px}
@@ -26,6 +27,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .btn-outline:hover{border-color:#1D9E75;color:#1D9E75}
 .btn-export{background:#0F6E56;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-export:hover{opacity:0.85}
+.dropdown-container {position: relative;flex: 1;min-width: 0;}
 .dropdown-container{position:relative}
 .dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:0.5px solid #d0d0c8;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;max-height:240px;overflow-y:auto;margin-top:2px}
 .dropdown-item{padding:8px 12px;cursor:pointer;font-size:13px;color:#333}
@@ -124,6 +126,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .admin-modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
 .admin-modal-actions .btn-cancel{background:none;border:0.5px solid #d0d0c8;color:#666;border-radius:7px;padding:7px 12px;cursor:pointer;font-family:inherit;font-size:13px}
 .admin-error{color:#c00;font-size:12px;margin-top:6px;display:none}
+.mode-consult{background:#fff3e0;color:#e65100;border:0.5px solid #ffcc02;}
+.mode-modif{background:#E1F5EE;color:#0F6E56;border:0.5px solid #b8e0d0;}
 </style>
 <script>
 var PASSWORDS = ['Alternaria43.', 'Belette0330.'];
@@ -145,6 +149,7 @@ function checkPassword() {
     if (gh) { try { sessionStorage.setItem('fungisem_ghtoken', gh); } catch(e){} }
     try { sessionStorage.setItem('fungisem_auth','1'); } catch(e){}
     showApp();
+    updateModeIndicator();
     if (typeof loadDB === 'function') loadDB();
     else { var t = setInterval(function(){ if(typeof loadDB==='function'){clearInterval(t);loadDB();} }, 100); }
   } else {
@@ -185,6 +190,23 @@ function confirmAdmin() {
 }
 
 var _adminAction = null;
+
+function hasToken() {
+  try { return !!sessionStorage.getItem('fungisem_ghtoken'); } catch(e) { return false; }
+}
+
+function updateModeIndicator() {
+  var el = document.getElementById('modeIndicator');
+  if (!el) return;
+  el.style.display = 'inline-block';
+  if (hasToken()) {
+    el.textContent = '✏️ Mode modification';
+    el.className = 'mode-modif';
+  } else {
+    el.textContent = '👁️ Mode consultation';
+    el.className = 'mode-consult';
+  }
+}
 var _adminCallback = null;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -237,6 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 <div class="header">
   <span class="strain-count" id="totalCount">chargement…</span>
+  <span id="modeIndicator" style="display:none;font-size:11px;padding:3px 10px;border-radius:99px;margin-left:8px"></span>
   <span id="syncStatus" style="display:none;font-size:12px;margin-left:12px"></span>
 
 <button onclick="if(typeof loadFromGitHub==='function'&&typeof GH_OWNER!=='undefined')loadFromGitHub();else{var s=document.getElementById('syncStatus');if(s){s.textContent='⏳ Chargement en cours.';s.style.display='block';s.style.color='#888';}}" 
@@ -265,11 +288,14 @@ title="Vider l'historique — Réservé F.B.">
   <div class="card" style="margin-bottom:12px">
     <div class="search-row">
       <div class="dropdown-container" style="flex:1">
-        <input type="text" id="simpleInput" placeholder="Accession number, autre nom, espèce…" autocomplete="off" oninput="onSimpleInput()" onkeydown="onSimpleKey(event)" />
+        <input type="text" id="simpleInput" placeholder="Nom de la souche : A43, FungiSem 0242, Abra43,..." autocomplete="off" oninput="onSimpleInput()" onkeydown="onSimpleKey(event)" />
         <div class="dropdown" id="simpleDropdown" style="display:none"></div>
       </div>
       <button class="btn" onclick="runSimpleSearch()">Rechercher</button>
       <button class="btn-outline" onclick="clearSimple()">Effacer</button>
+      <a href="https://univangersfr.sharepoint.com/:f:/t/FUNGISEM/IgArwQsLqEnlRppBb9TJ6wfIAUboc3mmZ4-9YRdMoAvXvDs?e=2hoxLh"target="_blank"class="btn-outline"style="text-decoration:none;
+          padding:9px 14px;font-size:13px;border-radius:8px;border:0.5px solid #d0d0c8; color:#444;cursor:pointer;display:inline-flex; align-items:center; gap:6px;">📷 Phototèque
+      </a>
     </div>
     <div id="simpleStatus" style="font-size:12px;color:#888"></div>
   </div>
@@ -300,7 +326,7 @@ title="Vider l'historique — Réservé F.B.">
 <div id="tab-primers" class="panel">
   <div class="card" style="margin-bottom:12px">
     <div class="search-row">
-      <input type="text" id="primerInput" placeholder="Nom de l'amorce : ITS1, EF1-728f, L2ap5…" autocomplete="off" oninput="showPrimersLive()" onkeydown="if(event.key==='Enter') runPrimerSearch()" style="flex:1" />
+      <input type="text" id="primerInput" placeholder="Nom de l'amorce : ITS1, EF1-728f, GPD1…" autocomplete="off" oninput="showPrimersLive()" onkeydown="if(event.key==='Enter') runPrimerSearch()" style="flex:1" />
       <button class="btn" onclick="runPrimerSearch()">Rechercher</button>
       <button class="btn-outline" onclick="clearPrimers()">Effacer</button>
       <a href="https://univangersfr.sharepoint.com/:f:/t/FUNGISEM/IgDdSfxEB_VqQbVTuBVRyRPgAbvLqZk90Pfen0letGsnLLk?e=7xIYUc" target="_blank" class="btn-outline" style="text-decoration:none;padding:9px 14px;font-size:13px;border-radius:8px;border:0.5px solid #d0d0c8;color:#444;cursor:pointer;display:inline-flex;align-items:center;gap:6px">📄 Fiches techniques</a>
@@ -570,7 +596,7 @@ function renderCardBody(acc) {
         <td>${escHtml(st.tray)}</td><td>${escHtml(st.box)}</td>
         <td>${escHtml(st.row)}</td><td>${escHtml(st.col)}</td>
         <td><span class="${qtyClass}" id="qty-${escId(key)}">${currentQty}</span>${isModified?'<span style="font-size:10px;color:#E07B00;margin-left:4px">✎</span>':''}</td>
-        <td><button class="btn btn-sm btn-outline" onclick="openEditModal('${escId(acc)}','${idx}','${escId(key)}','${currentQty}','${escHtml(st.room)}','${escHtml(st.freezer)}','${escHtml(st.tray)}','${escHtml(st.box)}','${escHtml(st.row)}','${escHtml(st.col)}')">Modifier</button></td>
+        <td>${(typeof hasToken==='function'&&hasToken())?`<button class="btn btn-sm btn-outline" onclick="openEditModal('${escId(acc)}','${idx}','${escId(key)}','${currentQty}','${escHtml(st.room)}','${escHtml(st.freezer)}','${escHtml(st.tray)}','${escHtml(st.box)}','${escHtml(st.row)}','${escHtml(st.col)}')">Modifier</button>`:''}</td>
       </tr>`;
     });
     html += `</tbody></table>`;
@@ -639,6 +665,7 @@ function closeModal() {
 }
 
 function confirmEdit() {
+  if (!hasToken()) { closeModal(); alert('Token GitHub requis pour modifier le stock.'); return; }
   const newQty = parseInt(document.getElementById('newQtyInput').value);
   const userName = document.getElementById('userNameInput').value.trim();
   if (isNaN(newQty)||newQty<0) { alert('Veuillez entrer un nombre valide.'); return; }
