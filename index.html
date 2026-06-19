@@ -191,6 +191,11 @@ function confirmAdmin() {
 
 var _adminAction = null;
 
+function _exportCSV() {
+  if (typeof _exportCSV === 'function') { _exportCSV(); }
+  else { setTimeout(function(){ if(typeof _exportCSV==='function') _exportCSV(); }, 500); }
+}
+
 function hasToken() {
   try { return !!sessionStorage.getItem('fungisem_ghtoken'); } catch(e) { return false; }
 }
