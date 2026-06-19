@@ -914,6 +914,63 @@ return `
   window._multiResults = results;
 }
 
+
+function exportCSV() {
+  if (!dbReady || !DB) { alert('Donnees non chargees.'); return; }
+  var results = window._multiResults || Object.keys(DB.strains);
+  if (!results.length) { alert('Aucun resultat a exporter.'); return; }
+
+  var rows = [];
+  var header = ['Accession','Autres noms','Taxon','Morphologie','Division','Ordre','Genre',
+    'Habitat','Prelevement','Localite','Projet','Date isolement','Genome',
+    'Stock_Salle','Stock_Congelateur','Stock_Tiroir','Stock_Boite','Stock_Ligne','Stock_Colonne','Stock_Explants',
+    'Seq_Gene','Seq_Fwd','Seq_Rev','Seq_AccRef'];
+  rows.push(header.join(';'));
+
+  function q(v) { return '"' + String(v||'').replace(/"/g,'""') + '"'; }
+
+  results.forEach(function(acc) {
+    var s = DB.strains[acc];
+    if (!s) return;
+    var stocks = DB.stocks[acc] || [];
+    var seqs = DB.sequences[acc] || [];
+
+    var base = [
+      q(s.accession), q(s.other_names), q(s.taxon),
+      q(s.morphology), q(s.division), q(s.order), q(s.genus),
+      q(s.habitat), q(s.sampling), q(s.locality), q(s.project),
+      q(s.isolation_date), q(s.genome_acc)
+    ];
+
+    var stockList = stocks.length ? stocks : [null];
+    var seqList = seqs.length ? seqs : [null];
+
+    stockList.forEach(function(st) {
+      seqList.forEach(function(sq) {
+        var qty = '';
+        if (st) {
+          qty = st.qty;
+          var key = acc + '|' + st.room + '|' + st.freezer + '|' + st.row + '|' + st.col;
+          if (typeof stockMods !== 'undefined' && stockMods[key] !== undefined) qty = stockMods[key];
+        }
+        var stockPart = st ? [q(st.room),q(st.freezer),q(st.tray),q(st.box),q(st.row),q(st.col),q(qty)] : ['""','""','""','""','""','""','""'];
+        var seqPart = sq ? [q(sq.gene),q(sq.fwd),q(sq.rev),q(sq.acc_ref||'')] : ['""','""','""','""'];
+        rows.push(base.concat(stockPart).concat(seqPart).join(';'));
+      });
+    });
+  });
+
+  var csv = rows.join('\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  var d = new Date();
+  a.download = 'FungiSem_export_' + d.getFullYear() +
+    String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 function openStrainFromMulti(accId) {
   const acc = accId.replace(/__/g,' ');
   document.getElementById('simpleInput').value = acc;
