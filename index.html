@@ -16,6 +16,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .tab.active{background:#1D9E75;color:#fff;font-weight:500}
 .panel{display:none}.panel.active{display:block}
 .card{background:#fff;border-radius:10px;border:0.5px solid #e0e0d8;padding:16px;margin-bottom:12px}
+.stat-box{flex:1;min-width:130px;background:#F3FBF8;border:0.5px solid #d0e8dd;border-radius:10px;padding:14px 12px;text-align:center}
+.stat-number{font-size:26px;font-weight:700;color:#0F6E56;line-height:1.1}
+.stat-label{font-size:12px;color:#666;margin-top:4px}
+.stat-dist-row{display:flex;align-items:center;gap:10px;padding:4px 0;font-size:13px}
+.stat-dist-label{width:150px;flex-shrink:0;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat-dist-bar-track{flex:1;background:#eef1ef;border-radius:5px;height:12px;overflow:hidden}
+.stat-dist-bar{background:#1D9E75;height:100%;border-radius:5px}
+.stat-dist-value{width:100px;flex-shrink:0;text-align:right;color:#666;font-size:12px}
 .search-row{display:flex;gap:8px;margin-bottom:12px}
 .search-row input{flex:1;padding:9px 12px;border:0.5px solid #d0d0c8;border-radius:8px;font-size:14px;font-family:inherit;outline:none}
 .search-row input:focus{border-color:#1D9E75;box-shadow:0 0 0 2px #1D9E7522}
@@ -287,6 +295,7 @@ title="Vider l'historique — Réservé F.B.">
   <button class="tab active" onclick="switchTab('simple')">Recherche simple</button>
   <button class="tab" onclick="switchTab('multiple')">Recherche multiple</button>
   <button class="tab" onclick="switchTab('primers')">Primers</button>
+  <button class="tab" onclick="switchTab('stats')">Statistiques</button>
   <button class="tab" onclick="switchTab('history')">Historique stock</button>
 </div>
 
@@ -340,6 +349,43 @@ title="Vider l'historique — Réservé F.B.">
     </div>
   </div>
   <div id="primerResults"></div>
+</div>
+
+<!-- TAB STATS -->
+<div id="tab-stats" class="panel">
+  <div class="card" style="margin-bottom:12px;display:flex;gap:12px;flex-wrap:wrap">
+    <div class="stat-box">
+      <div class="stat-number" id="statNbSouches">–</div>
+      <div class="stat-label">Souches</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" id="statNbEspeces">–</div>
+      <div class="stat-label">Espèces (taxon)</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" id="statNbGenres">–</div>
+      <div class="stat-label">Genres</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" id="statNbHabitats">–</div>
+      <div class="stat-label">Habitats</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:#333">Répartition par genre</div>
+    <div style="max-width:420px;margin:0 auto"><canvas id="statGenusPie"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:#333">Répartition par habitat</div>
+    <div style="max-width:420px;margin:0 auto"><canvas id="statHabitatPie"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:#333">Nombre de souches isolées par année</div>
+    <canvas id="statYearChart" height="90"></canvas>
+  </div>
 </div>
 
 <!-- TAB HISTORY -->
@@ -445,14 +491,15 @@ function saveLocal() {
 var modalContext = null;
 
 function switchTab(name) {
-  if (!dbReady && name==='multiple') { showDBLoading('⏳ Données en cours de chargement...'); setTimeout(hideDBLoading,2000); return; }
+  if (!dbReady && (name==='multiple' || name==='stats')) { showDBLoading('⏳ Données en cours de chargement...'); setTimeout(hideDBLoading,2000); return; }
   document.querySelectorAll('.tab').forEach((t,i) => {
-    t.classList.toggle('active', ['simple','multiple','primers','history'][i] === name);
+    t.classList.toggle('active', ['simple','multiple','primers','stats','history'][i] === name);
   });
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if (name === 'history') renderHistory();
   if (name === 'multiple') initFilters();
+  if (name === 'stats') renderStats();
 }
 
 // ---- SIMPLE SEARCH ----
@@ -791,6 +838,119 @@ var filterFields = [
 ];
 
 var filtersInited = false;
+
+// ---- STATISTIQUES ----
+var statYearChartInstance = null;
+var statGenusPieInstance = null;
+var statHabitatPieInstance = null;
+
+var STAT_PALETTE = ['#1D9E75','#0F6E56','#4CAF88','#8BC9AC','#2E8B7A','#66B2A0','#A3D9C5','#3F7F6B','#7FBFA3','#C8E8DA','#5FA98F','#9ED4BE','#278068','#B0E0CE','#4A9683'];
+
+function renderStats() {
+  const strains = Object.values(DB.strains);
+  const total = strains.length;
+
+  const taxa = new Set();
+  const genusCount = {};
+  const habitatCount = {};
+  const yearCount = {};
+
+  strains.forEach(s => {
+    const taxon = (s.taxon || '').trim();
+    if (taxon) taxa.add(taxon);
+
+    const genus = (s.genus || '').trim() || 'Non renseigné';
+    genusCount[genus] = (genusCount[genus] || 0) + 1;
+
+    const habitat = (s.habitat || '').trim() || 'Non renseigné';
+    habitatCount[habitat] = (habitatCount[habitat] || 0) + 1;
+
+    const dateStr = (s.isolation_date || '').trim();
+    const match = dateStr.match(/(\d{4})/);
+    if (match) {
+      const year = match[1];
+      yearCount[year] = (yearCount[year] || 0) + 1;
+    }
+  });
+
+  document.getElementById('statNbSouches').textContent = total;
+  document.getElementById('statNbEspeces').textContent = taxa.size;
+  document.getElementById('statNbGenres').textContent = Object.keys(genusCount).length;
+  document.getElementById('statNbHabitats').textContent = Object.keys(habitatCount).length;
+
+  statGenusPieInstance = renderStatPie('statGenusPie', genusCount, statGenusPieInstance);
+  statHabitatPieInstance = renderStatPie('statHabitatPie', habitatCount, statHabitatPieInstance);
+  renderStatYearChart(yearCount);
+}
+
+function renderStatPie(canvasId, counts, existingInstance) {
+  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const labels = entries.map(e => e[0]);
+  const data = entries.map(e => e[1]);
+  const colors = labels.map((_, i) => STAT_PALETTE[i % STAT_PALETTE.length]);
+
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  if (existingInstance) { existingInstance.destroy(); }
+  return new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors,
+        borderColor: '#fff',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+              const pct = total ? ((ctx.parsed/total)*100).toFixed(1) : 0;
+              return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderStatYearChart(yearCount) {
+  const years = Object.keys(yearCount).sort((a,b) => a-b);
+  const counts = years.map(y => yearCount[y]);
+
+  const ctx = document.getElementById('statYearChart').getContext('2d');
+  if (statYearChartInstance) { statYearChartInstance.destroy(); }
+  statYearChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [{
+        label: 'Souches isolées',
+        data: counts,
+        borderColor: '#0F6E56',
+        backgroundColor: 'rgba(15,110,86,0.12)',
+        fill: true,
+        tension: 0.25,
+        pointRadius: 3,
+        pointBackgroundColor: '#0F6E56'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { title: { display: true, text: 'Année' } },
+        y: { title: { display: true, text: 'Nombre de souches' }, beginAtZero: true, ticks: { precision: 0 } }
+      }
+    }
+  });
+}
 
 function initFilters() {
 
@@ -1363,6 +1523,7 @@ loadFromGitHub();
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script>
 
 // ---- CARTE OPENSTREETMAP ----
