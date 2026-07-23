@@ -931,8 +931,13 @@ function renderStatPie(canvasId, counts, existingInstance) {
 
 function renderStatYearChart(yearCount) {
   if (typeof Chart === 'undefined') return;
-  const years = Object.keys(yearCount).sort((a,b) => a-b);
-  const counts = years.map(y => yearCount[y]);
+
+  const currentYear = new Date().getFullYear();
+  const startYear = 1990;
+
+  const years = [];
+  for (let y = startYear; y <= currentYear; y++) years.push(String(y));
+  const counts = years.map(y => yearCount[y] || 0);
 
   const ctx = document.getElementById('statYearChart').getContext('2d');
   if (statYearChartInstance) { statYearChartInstance.destroy(); }
