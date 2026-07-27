@@ -4844,6 +4844,22 @@
 ,"FungiSem 04961":{"accession":"FungiSem 04961","collection":"FungiSem","project":"OBS","other_numbers":"OBS 210","other_names":"OBS 210","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"Plant","sampling":"Kale Cabbage","locality":"Plouédern","isolation_date":"2025","genome_acc":"","genome_link":"","lat":48.4840,"lon":-4.2550}
 ,"FungiSem 04962":{"accession":"FungiSem 04962","collection":"FungiSem","project":"OBS","other_numbers":"OBS 211","other_names":"OBS 211","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"Plant","sampling":"Kale Cabbage","locality":"Dirinon","isolation_date":"2025","genome_acc":"","genome_link":"","lat":48.3997,"lon":-4.2719}
 ,"FungiSem 04963":{"accession":"FungiSem 04963","collection":"FungiSem","project":"OBS","other_numbers":"OBS 212","other_names":"OBS 212","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"Plant","sampling":"","locality":"","isolation_date":"2025","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04964":{"accession":"FungiSem 04964","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DP3.Ba.M1","other_names":"Ab43DP3.Ba.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04965":{"accession":"FungiSem 04965","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DP3.Ca.M1","other_names":"Ab43DP3.Ca.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04966":{"accession":"FungiSem 04966","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DP3.Ea.M1","other_names":"Ab43DP3.Ea.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04967":{"accession":"FungiSem 04967","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DP3.Ga.M1","other_names":"Ab43DP3.Ga.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04968":{"accession":"FungiSem 04968","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DHm.A1.M1","other_names":"Ab43DHm.A1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04969":{"accession":"FungiSem 04969","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DHm.B1.M1","other_names":"Ab43DHm.B1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04970":{"accession":"FungiSem 04970","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DHm.C1.M1","other_names":"Ab43DHm.C1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04971":{"accession":"FungiSem 04971","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DHm.E1.M1","other_names":"Ab43DHm.E1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04972":{"accession":"FungiSem 04972","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DC.R1.M1","other_names":"Ab43DC.R1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04973":{"accession":"FungiSem 04973","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DC.S1.M1","other_names":"Ab43DC.S1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04974":{"accession":"FungiSem 04974","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DC.AE1.M1","other_names":"Ab43DC.AE1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04975":{"accession":"FungiSem 04975","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DC.AF1.M1","other_names":"Ab43DC.AF1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04976":{"accession":"FungiSem 04976","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DHy.F1.M1","other_names":"Ab43DHy.F1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04977":{"accession":"FungiSem 04977","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DHy.J1.M1","other_names":"Ab43DHy.J1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04978":{"accession":"FungiSem 04978","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DHy.K1.M1","other_names":"Ab43DHy.K1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
+,"FungiSem 04979":{"accession":"FungiSem 04979","collection":"FungiSem","project":"Transf. AB43","other_numbers":"Ab43DHy.O1.M1","other_names":"Ab43DHy.O1.M1","morphology":"Filamentous","division":"Ascomycota","order":"Pleosporales","genus":"Alternaria","taxon":"Alternaria brassicicola","habitat":"","sampling":"","locality":"","isolation_date":"","genome_acc":"","genome_link":"","lat":null,"lon":null}
 },
 "stocks":{
 "FungiSem 01453":[{"room":"A2.02","freezer":"IRHS000582","tray":"4","box":"1","row":"1","col":"1","qty":6}]
@@ -8703,6 +8719,22 @@
 ,"FungiSem 04961":[{"room":"A2.02","freezer":"IRHS000582","tray":"13","box":"3","row":"5","col":"9","qty":6}]
 ,"FungiSem 04962":[{"room":"A2.02","freezer":"IRHS000582","tray":"13","box":"3","row":"6","col":"1","qty":6}]
 ,"FungiSem 04963":[{"room":"A2.02","freezer":"IRHS000582","tray":"13","box":"3","row":"6","col":"2","qty":6}]
+,"FungiSem 04964":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"7","col":"4","qty":6}]
+,"FungiSem 04965":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"7","col":"5","qty":6}]
+,"FungiSem 04966":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"7","col":"6","qty":6}]
+,"FungiSem 04967":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"7","col":"7","qty":6}]
+,"FungiSem 04968":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"7","col":"8","qty":6}]
+,"FungiSem 04969":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"7","col":"9","qty":6}]
+,"FungiSem 04970":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"8","col":"1","qty":6}]
+,"FungiSem 04971":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"8","col":"2","qty":6}]
+,"FungiSem 04972":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"8","col":"3","qty":6}]
+,"FungiSem 04973":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"8","col":"4","qty":6}]
+,"FungiSem 04974":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"8","col":"5","qty":6}]
+,"FungiSem 04975":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"8","col":"6","qty":6}]
+,"FungiSem 04976":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"8","col":"7","qty":6}]
+,"FungiSem 04977":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"8","col":"8","qty":6}]
+,"FungiSem 04978":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"8","col":"9","qty":6}]
+,"FungiSem 04979":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"9","col":"1","qty":6}]
 },
 "sequences":{
 "FungiSem 00009":[{"gene":"GPD","fwd":"gpd1","rev":"gpd2","acc_ref":"","sequence":"CGCATGCCACAGTATCGAGCACAACGACGTCGACATTGTCGCCGTAAACGACCCCTTCATCGAGCCCCACTACGCTGTAAGCTTCCCCAAGCACCCACACTACAGCCGCGGCCATCCAAGTTGCGAAAACAGTCCTTGCGATGCGCTAGAGCTCCTCTGTGGTCGCAGAATGCAGGCTAACACATTCAGGCCTACATGCTCAAGTATGACAGCACACACGGCCAGTTCAAGGGTGAGATCAAGGTTGACGGCAACAACCTGACCGTCAACGGCAAGACCATCCGTTTCCACATGGAGAAGGACCCCGCCAACATCCCATGGAGCGAGACCGGCGCTTACTACGTCGTCGAGTCCACCGGTGTCTTCACCACCACCGAGAAGGCCAAGGCTCACTTGAAGGGTGGAGCCAAGAAGGTCGTCATTTCTGCTCCCTCTGCTGACGCCCCCATGTTCGTTATGGGTGTCAA"}]
@@ -19660,5 +19692,21 @@
 ,["FungiSem 04961","OBS 210"]
 ,["FungiSem 04962","OBS 211"]
 ,["FungiSem 04963","OBS 212"]
+,["FungiSem 04964","Ab43DP3.Ba.M1"]
+,["FungiSem 04965","Ab43DP3.Ca.M1"]
+,["FungiSem 04966","Ab43DP3.Ea.M1"]
+,["FungiSem 04967","Ab43DP3.Ga.M1"]
+,["FungiSem 04968","Ab43DHm.A1.M1"]
+,["FungiSem 04969","Ab43DHm.B1.M1"]
+,["FungiSem 04970","Ab43DHm.C1.M1"]
+,["FungiSem 04971","Ab43DHm.E1.M1"]
+,["FungiSem 04972","Ab43DC.R1.M1"]
+,["FungiSem 04973","Ab43DC.S1.M1"]
+,["FungiSem 04974","Ab43DC.AE1.M1"]
+,["FungiSem 04975","Ab43DC.AF1.M1"]
+,["FungiSem 04976","Ab43DHy.F1.M1"]
+,["FungiSem 04977","Ab43DHy.J1.M1"]
+,["FungiSem 04978","Ab43DHy.K1.M1"]
+,["FungiSem 04979","Ab43DHy.O1.M1"]
 ]
 }
