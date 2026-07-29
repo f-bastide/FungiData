@@ -683,6 +683,16 @@ function renderCardBody(acc) {
     html += `</div>`;
   }
 
+  if (s.souche_ogm && s.souche_ogm.trim().toUpperCase()==='OUI') {
+    html += `<div class="section-title">🧪 OGM</div>`;
+    if (s.souche_mere_ogm && s.souche_mere_ogm.trim() && s.souche_mere_ogm.trim()!=='None') {
+      html += `<div style="font-size:13px">Souche mère OGM : ${escHtml(s.souche_mere_ogm.trim())}</div>`;
+    }
+    if (s.fiches_transformants && s.fiches_transformants.trim() && s.fiches_transformants.trim()!=='None') {
+      html += `<div style="font-size:13px;margin-top:4px"><a href="${escHtml(s.fiches_transformants.trim())}" target="_blank" style="color:#1D9E75">Fiches transformants ↗</a></div>`;
+    }
+  }
+
   if (lits.length) {
     html += '<div class="section-title">📚 Publications (' + lits.length + ')</div>';
     lits.forEach(function(lit) {
