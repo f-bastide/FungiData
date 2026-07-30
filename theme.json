@@ -1,5 +1,5 @@
 {
-  "override": "noel",
+  "override": null,
   "themes": [
     {"nom": "noel",      "debut": "12-01", "fin": "12-30"},
     {"nom": "halloween", "debut": "10-10", "fin": "11-01"},
