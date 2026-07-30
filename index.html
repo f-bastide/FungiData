@@ -1114,7 +1114,7 @@ function exportCSV() {
   var header = ['Accession','Autres noms','Taxon','Morphologie','Division','Ordre','Genre',
     'Habitat','Prelevement','Localite','Projet','Date isolement','Genome',
     'Stock_Salle','Stock_Congelateur','Stock_Tiroir','Stock_Boite','Stock_Ligne','Stock_Colonne','Stock_Explants',
-    'Seq_Gene','Seq_Fwd','Seq_Rev','Seq_AccRef'];
+    'Seq_Gene','Seq_Fwd','Seq_Rev','Seq_AccRef','Sequence'];
   rows.push(header.join(';'));
 
   function q(v) { return '"' + String(v||'').replace(/"/g,'""') + '"'; }
@@ -1144,7 +1144,7 @@ function exportCSV() {
           if (typeof stockMods !== 'undefined' && stockMods[key] !== undefined) qty = stockMods[key];
         }
         var stockPart = st ? [q(st.room),q(st.freezer),q(st.tray),q(st.box),q(st.row),q(st.col),q(qty)] : ['""','""','""','""','""','""','""'];
-        var seqPart = sq ? [q(sq.gene),q(sq.fwd),q(sq.rev),q(sq.acc_ref||'')] : ['""','""','""','""'];
+        var seqPart = sq ? [q(sq.gene),q(sq.fwd),q(sq.rev),q(sq.acc_ref||''),q(sq.sequence||'')] : ['""','""','""','""','""'];
         rows.push(base.concat(stockPart).concat(seqPart).join(';'));
       });
     });
