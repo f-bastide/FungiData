@@ -1,8 +1,9 @@
 {
   "override": null,
   "themes": [
+    {"nom": "avril",     "debut": "04-01", "fin": "04-01"},
     {"nom": "noel",      "debut": "12-01", "fin": "12-30"},
-    {"nom": "halloween", "debut": "10-10", "fin": "11-05"},
+    {"nom": "halloween", "debut": "10-10", "fin": "11-01"},
     {"nom": "paques",    "debut": "03-20", "fin": "04-10"},
     {"nom": "ete",       "debut": "07-01", "fin": "08-31"}
   ],
