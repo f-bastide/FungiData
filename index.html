@@ -881,7 +881,8 @@ var filterFields = [
   {key:'habitat',label:'Habitat'},
   {key:'sampling',label:'Prélèvement'},
   {key:'locality',label:'Localité'},
-  {key:'project',label:'Projet'}
+  {key:'project',label:'Projet'},
+  {key:'publication',label:'Publication',type:'boolean'}
 ];
 
 var filtersInited = false;
@@ -1032,6 +1033,18 @@ function initFilters() {
   document.getElementById('filtersGrid').innerHTML =
     filterFields.map(f => {
 
+      if (f.type === 'boolean') {
+        return `
+        <div class="filter-group">
+          <label>${f.label}</label>
+          <select id="f-${f.key}">
+            <option value="">— Tous —</option>
+            <option value="oui">Oui</option>
+            <option value="non">Non</option>
+          </select>
+        </div>`;
+      }
+
       const vals = champs[f.key] || [];
 
 const opts = vals
@@ -1090,6 +1103,12 @@ function runMultiSearch() {
   for (const [acc,s] of Object.entries(DB.strains)) {
     let match=true;
     for (const [k,v] of Object.entries(filters)) {
+      if (k === 'publication') {
+        const hasPub = ((DB.literature && DB.literature[acc]) || []).length > 0;
+        const wanted = v === 'oui';
+        if (hasPub !== wanted) { match=false; break; }
+        continue;
+      }
       if (!(s[k] || '').toLowerCase().includes(v)) {
         match=false;
         break;
@@ -1125,6 +1144,7 @@ return `
   <span class="multi-taxon">
     ${escHtml(s.taxon || s.genus || '—')}
     ${s.other_names ? `<span class="multi-other-name">(${escHtml(s.other_names)})</span>` : ''}
+    ${((DB.literature && DB.literature[acc]) || []).length > 0 ? '<span title="Publication associée">📚</span>' : ''}
   </span>
 
   <span class="multi-loc">
