@@ -1144,7 +1144,6 @@ return `
   <span class="multi-taxon">
     ${escHtml(s.taxon || s.genus || '—')}
     ${s.other_names ? `<span class="multi-other-name">(${escHtml(s.other_names)})</span>` : ''}
-    ${((DB.literature && DB.literature[acc]) || []).length > 0 ? '<span title="Publication associée">📚</span>' : ''}
   </span>
 
   <span class="multi-loc">
