@@ -62,6 +62,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .stock-table tr:last-child td{border-bottom:none}
 .qty-val{font-weight:500;color:#1D9E75;min-width:20px;display:inline-block}
 .qty-modified{color:#E07B00;font-weight:600}
+.qty-low{background:#FFF3E0;color:#C4670A;font-weight:700;padding:2px 8px;border-radius:6px;border:0.5px solid #F5B95E}
 .seq-block{font-family:'Courier New',monospace;font-size:11px;background:#f8f8f4;border-radius:6px;padding:8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#555;margin-top:4px;cursor:pointer;border:0.5px solid #e8e8e0}
 .seq-block:hover{background:#f0faf6}
 .btn-copy{background:none;border:0.5px solid #d0d0c8;color:#666;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
@@ -659,12 +660,13 @@ function renderCardBody(acc) {
       const key = `${acc}|${st.room}|${st.freezer}|${st.row}|${st.col}`;
       const isModified = stockMods[key] !== undefined;
       const currentQty = isModified ? stockMods[key] : st.qty;
-      const qtyClass = isModified ? 'qty-val qty-modified' : 'qty-val';
+      const isLow = currentQty <= 1;
+      const qtyClass = 'qty-val' + (isModified?' qty-modified':'') + (isLow?' qty-low':'');
       html += `<tr>
         <td>${escHtml(st.room)}</td><td>${escHtml(st.freezer)}</td>
         <td>${escHtml(st.tray)}</td><td>${escHtml(st.box)}</td>
         <td>${escHtml(st.row)}</td><td>${escHtml(st.col)}</td>
-        <td><span class="${qtyClass}" id="qty-${escId(key)}">${currentQty}</span>${isModified?'<span style="font-size:10px;color:#E07B00;margin-left:4px">✎</span>':''}</td>
+        <td><span class="${qtyClass}" id="qty-${escId(key)}">${currentQty}</span>${isLow?'<span title="Stock bas" style="font-size:12px;margin-left:4px">⚠️</span>':''}${isModified?'<span style="font-size:10px;color:#E07B00;margin-left:4px">✎</span>':''}</td>
         <td>${(typeof hasToken==='function'&&hasToken())?`<button class="btn btn-sm btn-outline" onclick="openEditModal('${escId(acc)}','${idx}','${escId(key)}','${currentQty}','${escHtml(st.room)}','${escHtml(st.freezer)}','${escHtml(st.tray)}','${escHtml(st.box)}','${escHtml(st.row)}','${escHtml(st.col)}')">Modifier</button>`:''}</td>
       </tr>`;
     });
@@ -770,10 +772,29 @@ function confirmEdit() {
   saveToGitHub();
 
   const qtyEl = document.getElementById('qty-'+key.replace(/ /g,'__').replace(/\|/g,'__'));
-  if (qtyEl) { qtyEl.textContent = newQty; qtyEl.className = 'qty-val qty-modified'; }
+  if (qtyEl) {
+    const isLow = newQty <= 1;
+    qtyEl.textContent = newQty;
+    qtyEl.className = 'qty-val qty-modified' + (isLow?' qty-low':'');
+    const warnIcon = qtyEl.nextElementSibling;
+    if (!warnIcon || warnIcon.title !== 'Stock bas') {
+      if (isLow) {
+        const icon = document.createElement('span');
+        icon.title = 'Stock bas';
+        icon.style.cssText = 'font-size:12px;margin-left:4px';
+        icon.textContent = '⚠️';
+        qtyEl.insertAdjacentElement('afterend', icon);
+      }
+    } else if (!isLow && warnIcon) {
+      warnIcon.remove();
+    }
+  }
   closeModal();
   updateExportBar();
   if (document.getElementById('tab-history').classList.contains('active')) renderHistory();
+  if (newQty <= 1) {
+    setTimeout(() => alert('⚠️ Attention stock bas : Merci de prévoir un nouveau cryotube.'), 100);
+  }
 }
 
 function updateExportBar() {
