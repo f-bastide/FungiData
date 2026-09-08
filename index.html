@@ -179,19 +179,16 @@ function confirmAdmin() {
     document.getElementById('adminPwdInput').focus();
     return;
   }
-  document.getElementById('adminModal').classList.remove('show');
   var action = window._adminAction;
   window._adminAction = null;
   if (action === 'update') {
-    var t = setInterval(function(){
-      var fi = document.getElementById('updateFileInput');
-      if (fi) { clearInterval(t); fi.click(); }
-    }, 50);
+    document.getElementById('adminStep1').style.display = 'none';
+    document.getElementById('adminStep2').style.display = 'block';
   } else if (action === 'export') {
-    var t2 = setInterval(function(){
-      if (typeof _doExport === 'function') { clearInterval(t2); _doExport(); }
-    }, 50);
+    document.getElementById('adminStep1').style.display = 'none';
+    document.getElementById('adminStep3').style.display = 'block';
   } else if (action === 'vider') {
+    document.getElementById('adminModal').classList.remove('show');
     var t3 = setInterval(function(){
       if (typeof _doViderHistorique === 'function') { clearInterval(t3); _doViderHistorique(); }
     }, 50);
@@ -315,6 +312,12 @@ style="background:none;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;p
 </button>
 
 <div style="flex:1"></div>
+
+<button onclick="adminAuthUpdate()" 
+style="background:#e8f0f7;border:0.5px solid #4c8caf;color:#1a5276;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;margin-right:8px"
+title="Mettre à jour la base — Réservé F.B.">
+📂 Mettre à jour la base <span style="font-size:10px;opacity:0.7">(Réservé F.B.)</span>
+</button>
 
 <button onclick="adminViderHistorique()" 
 style="background:#e8f7e8;border:0.5px solid #4caf50;color:#2e7d32;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer"
@@ -794,30 +797,7 @@ function updateExportBar() {
 }
 
 // ---- EXPORT CSV pour Excel ----
-function exportModificationsCSV() {
-  const pending = editHistory.filter(h => !h.exported);
-  if (!pending.length) { alert('Aucune modification à exporter.'); return; }
-
-  const header = 'Date;Accession;Salle;Congélateur;Tiroir;Boîte;Rang;Colonne;Ancien stock;Nouveau stock;Utilisateur';
-  const rows = pending.map(h =>
-    [h.date+' '+h.time, h.acc, h.room, h.freezer, h.tray, h.box, h.rowPos||'', h.colPos||'', h.oldQty, h.newQty, h.user].join(';')
-  );
-  const csv = [header, ...rows].join('\n');
-
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  const d = new Date();
-  a.download = `FungiSem_modifs_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.csv`;
-  a.click();
-
-  // Marquer comme exportés
-  editHistory.forEach(h => { if(!h.exported) h.exported = true; });
-  exportedCount += pending.length;
-  saveLocal();
-  saveToGitHub();
-  updateExportBar();
-  renderHistory();
-}
+// (l'export réel se fait via _doExport(), déclenché depuis le modal admin)
 
 // ---- HISTORY ----
 function renderHistory() {
@@ -1423,9 +1403,10 @@ function handleUpdate(input) {
   statusDiv.textContent = '⏳ Lecture du fichier JSON en cours…';
 
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     try {
-      const newData = JSON.parse(e.target.result);
+      const rawText = e.target.result;
+      const newData = JSON.parse(rawText);
 
       // Validate structure
       if (!newData.strains || !newData.stocks || !newData.primers) {
@@ -1455,8 +1436,18 @@ function handleUpdate(input) {
       document.getElementById('multiResults').innerHTML = '';
 
       const now = new Date().toLocaleString('fr-FR');
-      statusDiv.innerHTML = `<strong>✅ Mise à jour réussie !</strong> ${count} souches chargées · ${now}
+      statusDiv.innerHTML = `<strong>✅ Données chargées en session !</strong> ${count} souches · ${now} — publication sur GitHub en cours…
         <button onclick="document.getElementById('updateStatus').style.display='none'" style="margin-left:12px;background:none;border:0.5px solid #b8e0d0;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;color:#0F6E56">Fermer</button>`;
+
+      // Persist to GitHub so the update reaches every user, not just this session
+      const pushed = await pushDataToGitHub(rawText);
+      if (pushed) {
+        statusDiv.innerHTML = `<strong>✅ Mise à jour publiée !</strong> ${count} souches chargées et synchronisées sur GitHub · ${now}
+          <button onclick="document.getElementById('updateStatus').style.display='none'" style="margin-left:12px;background:none;border:0.5px solid #b8e0d0;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;color:#0F6E56">Fermer</button>`;
+      } else {
+        statusDiv.innerHTML = `<strong>⚠️ Chargé en session, mais non publié sur GitHub.</strong> ${count} souches · vérifiez votre connexion/jeton GitHub puis réessayez, sinon les autres utilisateurs ne verront pas la mise à jour.
+          <button onclick="document.getElementById('updateStatus').style.display='none'" style="margin-left:12px;background:none;border:0.5px solid #ffd9a0;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;color:#a05a00">Fermer</button>`;
+      }
     } catch(err) {
       statusDiv.innerHTML = `<strong>❌ Erreur :</strong> ${err.message}
         <button onclick="document.getElementById('updateStatus').style.display='none'" style="margin-left:12px;background:none;border:0.5px solid #ffb8b8;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;color:#c00">Fermer</button>`;
