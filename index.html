@@ -14,6 +14,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .tabs{display:flex;gap:2px;margin-bottom:16px;background:#fff;border-radius:10px;padding:4px;border:0.5px solid #e0e0d8}
 .tab{flex:1;padding:8px 12px;font-size:13px;cursor:pointer;border:none;background:none;color:#666;border-radius:7px;transition:all 0.15s;font-family:inherit}
 .tab.active{background:#1D9E75;color:#fff;font-weight:500}
+.subtabs{display:flex;gap:2px;margin-bottom:12px;background:#f2f2ee;border-radius:8px;padding:3px;border:0.5px solid #e0e0d8;width:fit-content}
+.subtab{padding:6px 14px;font-size:12.5px;cursor:pointer;border:none;background:none;color:#777;border-radius:6px;transition:all 0.15s;font-family:inherit}
+.subtab.active{background:#fff;color:#1D9E75;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.subpanel{display:none}
+.subpanel.active{display:block}
 .panel{display:none}.panel.active{display:block}
 .card{background:#fff;border-radius:10px;border:0.5px solid #e0e0d8;padding:16px;margin-bottom:12px}
 .stat-box{flex:1;min-width:130px;background:#F3FBF8;border:0.5px solid #d0e8dd;border-radius:10px;padding:14px 12px;text-align:center}
@@ -318,15 +323,22 @@ title="Vider l'historique — Réservé F.B.">
 </button>
 </div>
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('simple')">Recherche simple</button>
-  <button class="tab" onclick="switchTab('multiple')">Recherche multiple</button>
+  <button class="tab active" onclick="switchTab('souches')">Souches</button>
   <button class="tab" onclick="switchTab('primers')">Primers</button>
+  <button class="tab" onclick="switchTab('plasmids')">Plasmides</button>
   <button class="tab" onclick="switchTab('stats')">Statistiques</button>
   <button class="tab" onclick="switchTab('history')">Historique stock</button>
 </div>
 
-<!-- TAB SIMPLE -->
-<div id="tab-simple" class="panel active">
+<!-- TAB SOUCHES -->
+<div id="tab-souches" class="panel active">
+  <div class="subtabs">
+    <button class="subtab active" onclick="switchSubTab('simple')">Recherche simple</button>
+    <button class="subtab" onclick="switchSubTab('multiple')">Recherche multiple</button>
+  </div>
+
+  <!-- SUBTAB SIMPLE -->
+  <div id="subtab-simple" class="subpanel active">
   <div class="card" style="margin-bottom:12px">
     <div class="search-row">
       <div class="dropdown-container" style="flex:1">
@@ -342,10 +354,10 @@ title="Vider l'historique — Réservé F.B.">
     <div id="simpleStatus" style="font-size:12px;color:#888"></div>
   </div>
   <div id="simpleResults"></div>
-</div>
+  </div>
 
-<!-- TAB MULTIPLE -->
-<div id="tab-multiple" class="panel">
+  <!-- SUBTAB MULTIPLE -->
+  <div id="subtab-multiple" class="subpanel">
   <div class="card" style="margin-bottom:12px">
     <div class="filters-grid" id="filtersGrid"></div>
     <div style="display:flex;gap:8px;align-items:center">
@@ -362,6 +374,7 @@ title="Vider l'historique — Réservé F.B.">
     <div id="fungisemMap"></div>
   </div>
   <div id="multiResults"></div>
+  </div>
 </div>
 
 <!-- TAB PRIMERS -->
@@ -375,6 +388,25 @@ title="Vider l'historique — Réservé F.B.">
     </div>
   </div>
   <div id="primerResults"></div>
+</div>
+
+<!-- TAB PLASMIDES -->
+<div id="tab-plasmids" class="panel">
+  <div class="card" style="margin-bottom:12px">
+    <div class="filters-grid" id="plasmidFiltersGrid"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn" onclick="runPlasmidSearch()">Rechercher</button>
+      <button class="btn-outline" onclick="resetPlasmidFilters()">Réinitialiser</button>
+      <button class="btn-outline" onclick="togglePlasmidHelp()">❔ Aide filtres</button>
+    </div>
+    <div id="plasmidHelpBox" style="display:none;margin-top:12px">
+      <img id="plasmidHelpImg" alt="Schéma explicatif des filtres Plasmides" style="max-width:100%;border-radius:8px;border:0.5px solid #e0e0d8;display:block" loading="lazy">
+    </div>
+  </div>
+  <div id="plasmidStatus" style="display:none;font-size:13px;color:#666;margin-bottom:10px">
+    <span id="plasmidCount"></span>
+  </div>
+  <div id="plasmidResults"></div>
 </div>
 
 <!-- TAB STATS -->
@@ -425,6 +457,17 @@ title="Vider l'historique — Réservé F.B.">
     </div>
     <div style="font-size:13px;color:#444;margin-bottom:12px">Historique de toutes les modifications du stock d'explants.</div>
     <div id="historyContent"></div>
+  </div>
+</div>
+
+<!-- MODAL PLASMIDE -->
+<div class="modal-backdrop" id="plasmidModal" onclick="if(event.target===this)closePlasmidModal()">
+  <div class="modal" style="width:420px;max-height:80vh;overflow-y:auto">
+    <h3 id="plasmidModalTitle">Plasmide</h3>
+    <div id="plasmidModalContent" style="font-size:13px;color:#333;line-height:1.7"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closePlasmidModal()">Fermer</button>
+    </div>
   </div>
 </div>
 
@@ -507,15 +550,25 @@ function saveLocal() {
 var modalContext = null;
 
 function switchTab(name) {
-  if (!dbReady && (name==='multiple' || name==='stats')) { showDBLoading('⏳ Données en cours de chargement...'); setTimeout(hideDBLoading,2000); return; }
+  if (!dbReady && (name==='souches' || name==='stats' || name==='plasmids')) { showDBLoading('⏳ Données en cours de chargement...'); setTimeout(hideDBLoading,2000); return; }
   document.querySelectorAll('.tab').forEach((t,i) => {
-    t.classList.toggle('active', ['simple','multiple','primers','stats','history'][i] === name);
+    t.classList.toggle('active', ['souches','primers','plasmids','stats','history'][i] === name);
   });
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if (name === 'history') renderHistory();
-  if (name === 'multiple') initFilters();
+  if (name === 'souches') initFilters();
+  if (name === 'plasmids') initPlasmidFilters();
   if (name === 'stats') renderStats();
+}
+
+function switchSubTab(name) {
+  document.querySelectorAll('.subtab').forEach((t,i) => {
+    t.classList.toggle('active', ['simple','multiple'][i] === name);
+  });
+  document.querySelectorAll('.subpanel').forEach(p => p.classList.remove('active'));
+  document.getElementById('subtab-'+name).classList.add('active');
+  if (name === 'multiple') initFilters();
 }
 
 // ---- SIMPLE SEARCH ----
@@ -837,7 +890,7 @@ function renderHistory() {
 function openStrainFromHistory(accId) {
   const acc = accId.replace(/__/g,' ');
   document.getElementById('simpleInput').value = acc;
-  switchTab('simple');
+  switchTab('souches'); switchSubTab('simple');
   runSimpleSearch();
   setTimeout(() => {
     const card = document.getElementById('card-'+escId(acc));
@@ -862,6 +915,149 @@ var filterFields = [
 ];
 
 var filtersInited = false;
+
+// ---- PLASMIDES ----
+// ---- PLASMIDES ----
+var plasmidHelpLoaded = false;
+var PLASMID_HELP_IMG_URL = 'https://raw.githubusercontent.com/f-bastide/FungiData/main/plasmid_filters_help.jpg';
+
+function togglePlasmidHelp() {
+  const box = document.getElementById('plasmidHelpBox');
+  if (box.style.display === 'none') {
+    if (!plasmidHelpLoaded) {
+      document.getElementById('plasmidHelpImg').src = PLASMID_HELP_IMG_URL;
+      plasmidHelpLoaded = true;
+    }
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+var plasmidFilterFields = [
+  {key:'level',       label:'Level'},
+  {key:'position',    label:'Position'},
+  {key:'role',        label:'Role'},
+  {key:'sens',        label:'Sens'},
+  {key:'flank5',       label:"5' Flank"},
+  {key:'flank3',       label:"3' Flank"},
+  {key:'resistance',  label:'Resistance'},
+  {key:'insert',      label:'Insert'},
+  {key:'backbone',    label:'Backbone'},
+  {key:'stock',       label:'Stock'}
+];
+var plasmidFiltersInited = false;
+var plasmidFieldLabels = {
+  name:'Nom du plasmide', box:'Box', column:'Colonne', row:'Ligne',
+  level:'Level', position:'Position', role:'Role', sens:'Sens',
+  flank5:"5' Flank", flank3:"3' Flank", resistance:'Resistance',
+  dose:'Dose antibiotique', insert:'Insert', selection:'Selection',
+  validation_primers:'Validation primers', selection_gene_size:'Selection gene size',
+  backbone:'Backbone', combinaison:'Plasmid combinaison (L1-L2...)',
+  map_link:'Lien vers carte du plasmide', stock:'Stock', miniprep:'Miniprep'
+};
+
+function initPlasmidFilters() {
+  if (!dbReady || !DB) { console.warn('initPlasmidFilters : DB pas encore chargée'); return; }
+  if (!DB.plasmids) { document.getElementById('plasmidFiltersGrid').innerHTML =
+    '<div class="no-results" style="grid-column:1/-1">Aucune donnée "plasmids" trouvée dans data.json. La feuille Plasmid doit être exportée par la macro pour alimenter cet onglet.</div>';
+    return;
+  }
+  if (plasmidFiltersInited) return;
+  plasmidFiltersInited = true;
+
+  document.getElementById('plasmidFiltersGrid').innerHTML =
+    plasmidFilterFields.map(f => {
+      const vals = Array.from(new Set((DB.plasmids || []).map(p => (p[f.key] || '').toString().trim())))
+        .filter(v => v && v !== 'None' && v !== '/' && v !== 'NA');
+      const opts = vals
+        .sort((a,b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }))
+        .map(v => `<option value="${escHtml(v)}">${escHtml(v)}</option>`)
+        .join('');
+      return `
+      <div class="filter-group">
+        <label>${f.label}</label>
+        <select id="pf-${f.key}">
+          <option value="">— Tous —</option>
+          ${opts}
+        </select>
+      </div>`;
+    }).join('');
+}
+
+function resetPlasmidFilters() {
+  plasmidFilterFields.forEach(f => {
+    const el = document.getElementById('pf-' + f.key);
+    if (el) el.value = '';
+  });
+  document.getElementById('plasmidResults').innerHTML = '';
+  document.getElementById('plasmidStatus').style.display = 'none';
+}
+
+function runPlasmidSearch() {
+  if (!dbReady || !DB) { showDBLoading('⏳ Données en cours de chargement...'); return; }
+  if (!DB.plasmids) { document.getElementById('plasmidResults').innerHTML =
+    '<div class="no-results">Aucune donnée plasmide disponible.</div>'; return; }
+
+  const filters = {};
+  plasmidFilterFields.forEach(f => {
+    const el = document.getElementById('pf-' + f.key);
+    if (el && el.value) filters[f.key] = el.value.toLowerCase();
+  });
+
+  const results = DB.plasmids.filter(p => {
+    for (const [k,v] of Object.entries(filters)) {
+      if (!((p[k] || '').toString().toLowerCase().includes(v))) return false;
+    }
+    return true;
+  });
+
+  const st = document.getElementById('plasmidStatus');
+  st.style.display = 'block';
+  document.getElementById('plasmidCount').textContent =
+    results.length + ' plasmide' + (results.length !== 1 ? 's' : '') + ' trouvé' + (results.length !== 1 ? 's' : '');
+
+  if (!results.length) {
+    document.getElementById('plasmidResults').innerHTML = '<div class="no-results">Aucun plasmide ne correspond.</div>';
+    return;
+  }
+
+  document.getElementById('plasmidResults').innerHTML = results.slice(0,300).map((p,idx) => `
+    <div class="multi-result-row" onclick="openPlasmidDetail(${idx})" style="cursor:pointer">
+      <span class="multi-acc">${escHtml(p.name || '—')}</span>
+      <span class="multi-taxon">${escHtml(p.role || '—')}</span>
+      <span class="multi-loc">${escHtml(p.backbone || '—')}</span>
+      <span class="multi-sampling">Stock : ${escHtml(p.stock || '—')}</span>
+    </div>`).join('') +
+    (results.length > 300 ? `<div style="text-align:center;padding:10px;font-size:12px;color:#aaa">…${results.length-300} autres résultats.</div>` : '');
+
+  window._plasmidResults = results;
+}
+
+function openPlasmidDetail(idx) {
+  const p = (window._plasmidResults || [])[idx];
+  if (!p) return;
+  document.getElementById('plasmidModalTitle').textContent = p.name || 'Plasmide';
+  document.getElementById('plasmidModalContent').innerHTML = Object.keys(plasmidFieldLabels)
+    .filter(k => k !== 'name')
+    .map(k => {
+      let val = p[k];
+      if (val == null || val === '' || val === 'None') val = '—';
+      if (k === 'map_link' && val && val !== '—' && val !== '/') {
+        val = `<a href="${escHtml(val)}" target="_blank">${escHtml(val)}</a>`;
+      } else {
+        val = escHtml(val);
+      }
+      return `<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #f0f0eb;padding:4px 0">
+        <span style="color:#888">${plasmidFieldLabels[k]}</span><span style="text-align:right;font-weight:500">${val}</span>
+      </div>`;
+    }).join('');
+  document.getElementById('plasmidModal').classList.add('show');
+}
+
+function closePlasmidModal() {
+  document.getElementById('plasmidModal').classList.remove('show');
+}
 
 // ---- STATISTIQUES ----
 var statYearChartInstance = null;
@@ -1197,7 +1393,7 @@ function exportCSV() {
 function openStrainFromMulti(accId) {
   const acc = accId.replace(/__/g,' ');
   document.getElementById('simpleInput').value = acc;
-  switchTab('simple');
+  switchTab('souches'); switchSubTab('simple');
   runSimpleSearch();
   setTimeout(()=>{
     const c =
@@ -1614,7 +1810,7 @@ function renderMap(accs) {
 function openStrainFromMap(acc) {
   if (_leafletMap) _leafletMap.closePopup();
   document.getElementById('simpleInput').value = acc;
-  switchTab('simple');
+  switchTab('souches'); switchSubTab('simple');
   runSimpleSearch();
   setTimeout(function(){
     var card = document.getElementById('card-'+escId(acc));
