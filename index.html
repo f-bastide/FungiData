@@ -381,7 +381,7 @@ title="Vider l'historique — Réservé F.B.">
 <div id="tab-primers" class="panel">
   <div class="card" style="margin-bottom:12px">
     <div class="search-row">
-      <input type="text" id="primerInput" placeholder="Nom de l'amorce : ITS1, EF1-728f, GPD1…" autocomplete="off" oninput="showPrimersLive()" onkeydown="if(event.key==='Enter') runPrimerSearch()" style="flex:1" />
+      <input type="text" id="primerInput" placeholder="Nom de l'amorce ou séquence : ITS1, EF1-728f, GPD1, ATCG…" autocomplete="off" oninput="showPrimersLive()" onkeydown="if(event.key==='Enter') runPrimerSearch()" style="flex:1" />
       <button class="btn" onclick="runPrimerSearch()">Rechercher</button>
       <button class="btn-outline" onclick="clearPrimers()">Effacer</button>
       <a href="https://univangersfr.sharepoint.com/:f:/t/FUNGISEM/IgDdSfxEB_VqQbVTuBVRyRPgAbvLqZk90Pfen0letGsnLLk?e=7xIYUc" target="_blank" class="btn-outline" style="text-decoration:none;padding:9px 14px;font-size:13px;border-radius:8px;border:0.5px solid #d0d0c8;color:#444;cursor:pointer;display:inline-flex;align-items:center;gap:6px">📄 Fiches techniques</a>
@@ -1507,7 +1507,7 @@ function renderPrimers(q, showAll){
         const na = parseInt(a.stock)||0, nb = parseInt(b.stock)||0;
         return nb - na;
       })
-    : [...DB.primers].filter(p=>p.name.toLowerCase().includes(q)).sort((a,b) => {
+    : [...DB.primers].filter(p=>p.name.toLowerCase().includes(q) || (p.sequence||'').toLowerCase().includes(q)).sort((a,b) => {
         const na = parseInt(a.stock)||0, nb = parseInt(b.stock)||0;
         return nb - na;
       });
