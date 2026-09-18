@@ -571,6 +571,32 @@ function switchSubTab(name) {
   if (name === 'multiple') initFilters();
 }
 
+// ---- SYNONYMES (Index fungorum) ----
+// Retourne le groupe complet [nom courant, synonymes...] pour une espece donnee,
+// ou [name] si l'espece n'est pas referencee dans l'onglet "Index fungorum".
+function getSynonymGroup(name) {
+  if (!name) return [];
+  const key = name.trim().toLowerCase();
+  if (DB.synonyms && DB.synonyms[key]) return DB.synonyms[key];
+  return [name];
+}
+
+// Renvoie la classification a jour d'une souche (nom courant + genre/division/
+// ordre/morphologie), issue de l'onglet "Index fungorum" quand l'espece y est
+// referencee (meme via un synonyme) ; sinon renvoie les valeurs brutes de Strains.
+// Ex : une souche taguee "Pythium ultimum" s'affichera "Globisporangium ultimum".
+function taxoNorm(s) {
+  const key = (s.taxon || '').trim().toLowerCase();
+  const t = (DB.fungorum_taxo && DB.fungorum_taxo[key]) || null;
+  return {
+    taxon: t ? t.current : (s.taxon || ''),
+    genus: t ? t.genus : (s.genus || ''),
+    division: t ? t.division : (s.division || ''),
+    order: t ? t.order : (s.order || ''),
+    morphology: t ? t.morphology : (s.morphology || '')
+  };
+}
+
 // ---- SIMPLE SEARCH ----
 var dropdownItems = [];
 var ddSelected = -1;
@@ -630,8 +656,20 @@ function runSimpleSearch() {
   const q = document.getElementById('simpleInput').value.trim().toLowerCase();
   if (!q) return;
   const found = [];
+  const seenAcc = new Set();
   for (const [acc, other] of DB.search_idx) {
-    if (acc.toLowerCase().includes(q) || (other||'').toLowerCase().includes(q)) found.push(acc);
+    if (acc.toLowerCase().includes(q) || (other||'').toLowerCase().includes(q)) {
+      if (!seenAcc.has(acc)) { found.push(acc); seenAcc.add(acc); }
+    }
+  }
+  // Recherche par espece, en tenant compte des synonymes (onglet "Index fungorum") :
+  // une recherche sur "Fusarium redolens" retrouve aussi les souches "Fusarium solani" et inversement.
+  for (const [acc, s] of Object.entries(DB.strains)) {
+    if (seenAcc.has(acc)) continue;
+    const group = getSynonymGroup(s.taxon || '');
+    if (group.some(n => n.toLowerCase().includes(q))) {
+      found.push(acc); seenAcc.add(acc);
+    }
   }
   const status = document.getElementById('simpleStatus');
   if (!found.length) {
@@ -654,6 +692,7 @@ function runSimpleSearch() {
 function renderStrainCard(acc) {
   const s = DB.strains[acc];
   if (!s) return '';
+  const tx = taxoNorm(s);
   return `<div class="result-card" id="card-${escId(acc)}">
     <div class="rc-header" onclick="toggleCard('${escId(acc)}')">
       <div class="rc-left">
@@ -661,7 +700,7 @@ function renderStrainCard(acc) {
         ${s.other_names ? `<span class="other-names">${escHtml(s.other_names)}</span>` : ''}
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        ${s.taxon ? `<span class="taxon-badge">${escHtml(s.taxon)}</span>` : ''}
+        ${tx.taxon ? `<span class="taxon-badge">${escHtml(tx.taxon)}</span>` : ''}
         <span class="chevron" id="chv-${escId(acc)}">▾</span>
       </div>
     </div>
@@ -683,6 +722,7 @@ function toggleCard(id) {
 
 function renderCardBody(acc) {
   const s = DB.strains[acc];
+  const tx = taxoNorm(s);
   const stocks = DB.stocks[acc] || [];
   const seqs = DB.sequences[acc] || [];
   const lits = DB.literature[acc] || [];
@@ -690,11 +730,11 @@ function renderCardBody(acc) {
 
   html += `<div class="section-title">🔬 Identité</div>
   <div class="info-grid">
-    <div class="info-item"><label>Taxon</label><span><em>${escHtml(s.taxon||'—')}</em></span></div>
-    <div class="info-item"><label>Morphologie</label><span>${escHtml(s.morphology||'—')}</span></div>
-    <div class="info-item"><label>Division</label><span>${escHtml(s.division||'—')}</span></div>
-    <div class="info-item"><label>Ordre</label><span>${escHtml(s.order||'—')}</span></div>
-    <div class="info-item"><label>Genre</label><span>${escHtml(s.genus||'—')}</span></div>
+    <div class="info-item"><label>Taxon</label><span><em>${escHtml(tx.taxon||'—')}</em></span></div>
+    <div class="info-item"><label>Morphologie</label><span>${escHtml(tx.morphology||'—')}</span></div>
+    <div class="info-item"><label>Division</label><span>${escHtml(tx.division||'—')}</span></div>
+    <div class="info-item"><label>Ordre</label><span>${escHtml(tx.order||'—')}</span></div>
+    <div class="info-item"><label>Genre</label><span>${escHtml(tx.genus||'—')}</span></div>
     <div class="info-item"><label>Projet</label><span>${escHtml(s.project||'—')}</span></div>
   </div>
   <div class="info-grid" style="margin-top:8px">
@@ -1083,10 +1123,16 @@ function renderStats() {
   const yearCount = {};
 
   strains.forEach(s => {
-    const taxon = (s.taxon || '').trim();
-    if (taxon) taxa.add(taxon);
+    const tx = taxoNorm(s);
+    const rawKey = (s.taxon || '').trim().toLowerCase();
+    const isResolved = !!(DB.fungorum_taxo && DB.fungorum_taxo[rawKey]);
+    const taxon = (tx.taxon || '').trim();
+    // Ne compte comme "espece" que les taxons identifies au niveau espece :
+    // soit resolus via l'Index fungorum, soit deja un nom binomial "Genre espece"
+    // (meme non encore catalogue). Exclut les genres seuls (ex. "Fusarium", "Fungi").
+    if (taxon && (isResolved || taxon.includes(' '))) taxa.add(taxon);
 
-    const genus = (s.genus || '').trim() || 'Non renseigné';
+    const genus = (tx.genus || '').trim() || 'Non renseigné';
     genusCount[genus] = (genusCount[genus] || 0) + 1;
 
     const habitat = (s.habitat || '').trim() || 'Non renseigné';
@@ -1202,6 +1248,26 @@ function initFilters() {
   filtersInited = true;
   const champs = DB.champs || {};
 
+  // Champs issus de la classification (onglet "Index fungorum") : on reconstruit
+  // les listes a partir des noms/classification a jour plutot que des valeurs
+  // brutes de Strains, pour afficher ex. "Globisporangium ultimum" au lieu de
+  // "Pythium ultimum".
+  const normFieldKeys = ['morphology', 'division', 'order', 'genus', 'taxon'];
+  const normChamps = {};
+  normFieldKeys.forEach(k => normChamps[k] = new Set());
+  Object.values(DB.strains).forEach(s => {
+    const key = (s.taxon || '').trim().toLowerCase();
+    const t = DB.fungorum_taxo && DB.fungorum_taxo[key];
+    const tx = taxoNorm(s);
+    normFieldKeys.forEach(k => {
+      // Pour le taxon (espece), on ne garde que les noms d'espece "Current name"
+      // issus de l'Index fungorum (on exclut les valeurs brutes non reconnues,
+      // ex. un genre seul comme "Alternaria" sans epithete resolue).
+      if (k === 'taxon') { if (t && t.current) normChamps.taxon.add(t.current); return; }
+      if (tx[k]) normChamps[k].add(tx[k]);
+    });
+  });
+
   document.getElementById('filtersGrid').innerHTML =
     filterFields.map(f => {
 
@@ -1217,7 +1283,7 @@ function initFilters() {
         </div>`;
       }
 
-      const vals = champs[f.key] || [];
+      const vals = normFieldKeys.includes(f.key) ? Array.from(normChamps[f.key]) : (champs[f.key] || []);
 
 const opts = vals
   .filter(v => v && v !== 'None')
@@ -1272,13 +1338,26 @@ function runMultiSearch() {
     }
   });
   const results=[];
+  const normMatchKeys = ['morphology', 'division', 'order', 'genus'];
   for (const [acc,s] of Object.entries(DB.strains)) {
     let match=true;
+    const tx = taxoNorm(s);
     for (const [k,v] of Object.entries(filters)) {
       if (k === 'publication') {
         const hasPub = ((DB.literature && DB.literature[acc]) || []).length > 0;
         const wanted = v === 'oui';
         if (hasPub !== wanted) { match=false; break; }
+        continue;
+      }
+      if (k === 'taxon') {
+        // Filtre espece : associe le nom courant et ses synonymes (onglet "Index fungorum")
+        const group = getSynonymGroup(v).map(n => n.toLowerCase());
+        const taxonVal = (s.taxon || '').toLowerCase();
+        if (!group.some(g => taxonVal.includes(g))) { match=false; break; }
+        continue;
+      }
+      if (normMatchKeys.includes(k)) {
+        if (!(tx[k] || '').toLowerCase().includes(v)) { match=false; break; }
         continue;
       }
       if (!(s[k] || '').toLowerCase().includes(v)) {
@@ -1305,6 +1384,7 @@ function runMultiSearch() {
   document.getElementById('multiResults').innerHTML =
     results.slice(0,200).map(acc=>{
       const s=DB.strains[acc];
+      const tx=taxoNorm(s);
 return `
 <div class="multi-result-row"
      onclick="openStrainFromMulti('${escId(acc)}')">
@@ -1314,7 +1394,7 @@ return `
   </span>
 
   <span class="multi-taxon">
-    ${escHtml(s.taxon || s.genus || '—')}
+    ${escHtml(tx.taxon || tx.genus || '—')}
     ${s.other_names ? `<span class="multi-other-name">(${escHtml(s.other_names)})</span>` : ''}
   </span>
 
@@ -1351,12 +1431,13 @@ function exportCSV() {
   results.forEach(function(acc) {
     var s = DB.strains[acc];
     if (!s) return;
+    var tx = taxoNorm(s);
     var stocks = DB.stocks[acc] || [];
     var seqs = DB.sequences[acc] || [];
 
     var base = [
-      q(s.accession), q(s.other_names), q(s.taxon),
-      q(s.morphology), q(s.division), q(s.order), q(s.genus),
+      q(s.accession), q(s.other_names), q(tx.taxon),
+      q(tx.morphology), q(tx.division), q(tx.order), q(tx.genus),
       q(s.habitat), q(s.sampling), q(s.locality), q(s.project),
       q(s.isolation_date), q(s.genome_acc)
     ];
@@ -1767,7 +1848,8 @@ function renderMap(accs) {
 
     var strainList = group.accs.slice(0,20).map(function(acc){
       var s = DB.strains[acc];
-      var taxon = s && s.taxon ? ' — <em>'+escHtml(s.taxon)+'</em>' : '';
+      var txName = s ? taxoNorm(s).taxon : '';
+      var taxon = txName ? ' — <em>'+escHtml(txName)+'</em>' : '';
       return '<a style="color:#1D9E75;text-decoration:none;cursor:pointer;display:block;padding:2px 0" onclick="openStrainFromMap(\''+ acc.replace(/'/g,"\\'")+'\')">' + escHtml(acc) + taxon  + '</a>';
     }).join('');
     var moreText = group.accs.length > 20 ? '<div style="color:#aaa;font-size:11px;margin-top:4px">… et '+(group.accs.length-20)+' autres</div>' : '';

@@ -14108,10 +14108,10 @@
 ,{"name":"A43-Flanking3’F ","sequence":"TTGGTCTCAGGAGCGTTGTTACCGTTGGAATCGTT","stock":"3760","room":"A2.09 - Congélateur 8"}
 ,{"name":"A43-Flanking 3’R ","sequence":"GCGAACTCTGGTTTGGTGCATCTGGTGTTGCCTA","stock":"3761","room":"A2.09 - Congélateur 8"}
 ,{"name":"AbintKOC1,2OF","sequence":"TACGCGCTTTCTTCTGTCGT","stock":"3762","room":"A2.09 - Congélateur 8"}
-,{"name":"L4440Fw","sequence":"AGCGAGTCAGTGAGCGAG","stock":"3763","room":"A2.09 - Congélateur 8"}
-,{"name":"pBRforEcoRev","sequence":"AATAGGCGTATCACGAGGC","stock":"3764","room":"A2.09 - Congélateur 8"}
-,{"name":"RB-4.223-F","sequence":"TCACGCCCTTTTAAATATCCGA","stock":"3765","room":"A2.09 - Congélateur 8"}
-,{"name":"LB-127 R","sequence":"CCGGTCGGGGAGCTGTTG","stock":"3766","room":"A2.09 - Congélateur 8"}
+,{"name":"MS314","sequence":"AGCGAGTCAGTGAGCGAG","stock":"3763","room":"A2.09 - Congélateur 8"}
+,{"name":"MS315","sequence":"AATAGGCGTATCACGAGGC","stock":"3764","room":"A2.09 - Congélateur 8"}
+,{"name":"MS325","sequence":"TCACGCCCTTTTAAATATCCGA","stock":"3765","room":"A2.09 - Congélateur 8"}
+,{"name":"MS326","sequence":"CCGGTCGGGGAGCTGTTG","stock":"3766","room":"A2.09 - Congélateur 8"}
 ,{"name":"CDS-Hog1 F","sequence":"ATGGCGGAATTCGTACGCG","stock":"3767","room":"A2.09 - Congélateur 8"}
 ,{"name":"CDS-Hog1 R","sequence":"GCTGCCGTTGTTCTCTTGCT","stock":"3768","room":"A2.09 - Congélateur 8"}
 ,{"name":"Twist-F","sequence":"ATCGAAGACTTCTCAAATGGCGG","stock":"3769","room":"A2.09 - Congélateur 8"}
