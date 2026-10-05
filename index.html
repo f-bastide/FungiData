@@ -957,6 +957,7 @@ function computeQC() {
           taxaSp: taxa.filter(function(t){ return t.name.indexOf(' ') >= 0; }),
           taxaGen: taxa.filter(function(t){ return t.name.indexOf(' ') < 0; })};
 }
+function qcRef(a) { var s = (DB.strains || {})[a]; var r = s && s.other_numbers != null ? String(s.other_numbers).trim() : ''; return r; }
 function qcAccLink(a) { return '<span class="qc-link" onclick="openStrainFromHistory(\'' + escId(a) + '\')">' + escHtml(a) + '</span>'; }
 function qcDownload(name, header, rows) {
   var csv = [header].concat(rows).join('\n');
@@ -976,20 +977,20 @@ function renderQC() {
   var strains = DB.strains;
   var lowStrains = {}; q.low.forEach(function(l){ lowStrains[l.acc] = 1; });
   qcSetSec('qc-low', '⚠️ Stock bas (explants &lt; 2)', q.low.length,
-    '<button class="qc-csv" onclick="qcDownload(\'stock_bas\',\'Accession;Taxon;Salle;Congelateur;Tiroir;Boite;Ligne;Colonne;Explants\',window._qc.low.map(function(l){return [l.acc,DB.strains[l.acc]?DB.strains[l.acc].taxon:\'\',l.st.room,l.st.freezer,l.st.tray,l.st.box,l.st.row,l.st.col,l.qty].join(\';\');}))">⬇ CSV</button>' +
+    '<button class="qc-csv" onclick="qcDownload(\'stock_bas\',\'Accession;Taxon;Ref autres collections;Salle;Congelateur;Tiroir;Boite;Ligne;Colonne;Explants\',window._qc.low.map(function(l){return [l.acc,DB.strains[l.acc]?DB.strains[l.acc].taxon:\'\',qcRef(l.acc),l.st.room,l.st.freezer,l.st.tray,l.st.box,l.st.row,l.st.col,l.qty].join(\';\');}))">⬇ CSV</button>' +
     '<div style="font-size:12px;color:#777;margin-bottom:8px">' + q.low.length + ' ligne(s) de stock pour ' + Object.keys(lowStrains).length + ' souche(s), quantité strictement inférieure à 2 (modifications locales non exportées incluses).' + (q.noQty ? ' ' + q.noQty + ' ligne(s) sans quantité renseignée ignorée(s).' : '') + '</div>' +
-    tbl(['Souche','Taxon','Salle','Congélateur','Tiroir','Boîte','Ligne','Col.','Explants'], q.low.map(function(l){ var s = strains[l.acc] || {}; var st = l.st;
-      return '<tr><td>'+qcAccLink(l.acc)+'</td><td><em>'+escHtml(s.taxon||'—')+'</em></td><td>'+escHtml(st.room)+'</td><td>'+escHtml(st.freezer)+'</td><td>'+escHtml(st.tray)+'</td><td>'+escHtml(st.box)+'</td><td>'+escHtml(st.row)+'</td><td>'+escHtml(st.col)+'</td><td style="font-weight:600;color:'+(l.qty<1?'#c62828':'#E07B00')+'">'+l.qty+(l.mod?' <span style="font-size:10px;color:#aaa">(modifié)</span>':'')+'</td></tr>'; })));
+    tbl(['Souche','Taxon','Réf. autres collections','Salle','Congélateur','Tiroir','Boîte','Ligne','Col.','Explants'], q.low.map(function(l){ var s = strains[l.acc] || {}; var st = l.st;
+      return '<tr><td>'+qcAccLink(l.acc)+'</td><td><em>'+escHtml(s.taxon||'—')+'</em></td><td>'+escHtml(qcRef(l.acc)||'—')+'</td><td>'+escHtml(st.room)+'</td><td>'+escHtml(st.freezer)+'</td><td>'+escHtml(st.tray)+'</td><td>'+escHtml(st.box)+'</td><td>'+escHtml(st.row)+'</td><td>'+escHtml(st.col)+'</td><td style="font-weight:600;color:'+(l.qty<1?'#c62828':'#E07B00')+'">'+l.qty+(l.mod?' <span style="font-size:10px;color:#aaa">(modifié)</span>':'')+'</td></tr>'; })));
   qcSetSec('qc-nostock', '📦 Souches sans stock', q.noStock.length,
-    '<button class="qc-csv" onclick="qcDownload(\'sans_stock\',\'Accession;Taxon;Projet\',window._qc.noStock.map(function(a){return [a,DB.strains[a].taxon,DB.strains[a].project].join(\';\');}))">⬇ CSV</button>' +
+    '<button class="qc-csv" onclick="qcDownload(\'sans_stock\',\'Accession;Taxon;Ref autres collections;Projet\',window._qc.noStock.map(function(a){return [a,DB.strains[a].taxon,qcRef(a),DB.strains[a].project].join(\';\');}))">⬇ CSV</button>' +
     '<div style="font-size:12px;color:#777;margin-bottom:8px">Souches présentes dans l\'onglet Strains sans aucune ligne de stock.</div>' +
-    tbl(['Souche','Taxon','Projet'], q.noStock.map(function(a){ var s = strains[a]; return '<tr><td>'+qcAccLink(a)+'</td><td><em>'+escHtml(s.taxon||'—')+'</em></td><td>'+escHtml(s.project||'—')+'</td></tr>'; })));
+    tbl(['Souche','Taxon','Réf. autres collections','Projet'], q.noStock.map(function(a){ var s = strains[a]; return '<tr><td>'+qcAccLink(a)+'</td><td><em>'+escHtml(s.taxon||'—')+'</em></td><td>'+escHtml(qcRef(a)||'—')+'</td><td>'+escHtml(s.project||'—')+'</td></tr>'; })));
   qcSetSec('qc-orphan', '🔗 Lignes de stock sans souche correspondante', q.orphans.length,
-    tbl(['Accession (stock)','Nb lignes','Emplacement'], q.orphans.map(function(a){ return DB.stocks[a].map(function(st){ return '<tr><td>'+escHtml(a)+'</td><td>1</td><td style="font-size:11px;color:#888">'+escHtml(st.room)+' · '+escHtml(st.freezer)+' · Tir.'+escHtml(st.tray)+' Bx'+escHtml(st.box)+' L'+escHtml(st.row)+' C'+escHtml(st.col)+'</td></tr>'; }).join(''); })));
+    tbl(['Accession (stock)','Réf. autres collections','Nb lignes','Emplacement'], q.orphans.map(function(a){ return DB.stocks[a].map(function(st){ return '<tr><td>'+escHtml(a)+'</td><td>'+escHtml(qcRef(a)||'—')+'</td><td>1</td><td style="font-size:11px;color:#888">'+escHtml(st.room)+' · '+escHtml(st.freezer)+' · Tir.'+escHtml(st.tray)+' Bx'+escHtml(st.box)+' L'+escHtml(st.row)+' C'+escHtml(st.col)+'</td></tr>'; }).join(''); })));
   qcSetSec('qc-dup', '📍 Doublons de positionnement', q.dups.length,
-    '<button class="qc-csv" onclick="qcDownload(\'doublons_position\',\'Salle;Congelateur;Tiroir;Boite;Ligne;Colonne;Souches\',window._qc.dups.map(function(d){return d.parts.concat([d.items.map(function(i){return i.acc;}).join(\' / \')]).join(\';\');}))">⬇ CSV</button>' +
+    '<button class="qc-csv" onclick="qcDownload(\'doublons_position\',\'Salle;Congelateur;Tiroir;Boite;Ligne;Colonne;Souches;Ref autres collections\',window._qc.dups.map(function(d){return d.parts.concat([d.items.map(function(i){return i.acc;}).join(\' / \'), d.items.map(function(i){return qcRef(i.acc)||\'-\';}).join(\' / \')]).join(\';\');}))">⬇ CSV</button>' +
     '<div style="font-size:12px;color:#777;margin-bottom:8px">Plusieurs lignes de stock à la même salle / congélateur / tiroir / boîte / ligne / colonne (lignes sans ligne ou colonne ignorées).</div>' +
-    tbl(['Salle','Congélateur','Tiroir','Boîte','Ligne','Col.','Souches'], q.dups.map(function(d){ return '<tr>'+d.parts.map(function(p){return '<td>'+escHtml(p)+'</td>';}).join('')+'<td>'+d.items.map(function(i){return qcAccLink(i.acc)+' <span style="color:#aaa">('+escHtml(i.qty)+')</span>';}).join('<br>')+'</td></tr>'; })));
+    tbl(['Salle','Congélateur','Tiroir','Boîte','Ligne','Col.','Souches','Réf. autres collections'], q.dups.map(function(d){ return '<tr>'+d.parts.map(function(p){return '<td>'+escHtml(p)+'</td>';}).join('')+'<td>'+d.items.map(function(i){return qcAccLink(i.acc)+' <span style="color:#aaa">('+escHtml(i.qty)+')</span>';}).join('<br>')+'</td><td>'+d.items.map(function(i){return escHtml(qcRef(i.acc)||'—');}).join('<br>')+'</td></tr>'; })));
   var taxRows = function(list) { return list.map(function(t){ return '<tr><td><em>'+escHtml(t.name)+'</em></td><td>'+t.accs.length+'</td><td style="font-size:11px">'+t.accs.slice(0,4).map(qcAccLink).join(', ')+(t.accs.length>4?' …':'')+'</td></tr>'; }); };
   var nTax = q.taxaSp.length + q.taxaGen.length;
   qcSetSec('qc-taxa', '🧬 Taxons absents de l\'Index fungorum', nTax,
