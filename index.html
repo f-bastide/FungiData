@@ -143,6 +143,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .admin-error{color:#c00;font-size:12px;margin-top:6px;display:none}
 .mode-consult{background:#fff3e0;color:#e65100;border:0.5px solid #ffcc02;}
 .mode-modif{background:#E1F5EE;color:#0F6E56;border:0.5px solid #b8e0d0;}
+.qc-sec{background:#fff;border:0.5px solid #e0e0d8;border-radius:10px;margin-bottom:10px}
+.qc-sec>summary{cursor:pointer;padding:12px 16px;font-size:14px;font-weight:500;color:#333;list-style:none}
+.qc-sec>summary::-webkit-details-marker{display:none}
+.qc-body{padding:0 16px 14px}
+.qc-scroll{max-height:380px;overflow:auto;border:0.5px solid #eee;border-radius:7px}
+.qc-ok{color:#1D9E75}.qc-warn{color:#E07B00}
+.qc-link{color:#1D9E75;font-weight:500;cursor:pointer}
+.qc-csv{float:right;font-size:12px;background:none;border:0.5px solid #d0d0c8;border-radius:6px;padding:4px 10px;cursor:pointer;color:#555;font-family:inherit}
 </style>
 <script>
 var PASSWORDS = ['Alternaria43.', 'Belette0330.'];
@@ -190,6 +198,10 @@ function confirmAdmin() {
   if (action === 'export') {
     document.getElementById('adminStep1').style.display = 'none';
     document.getElementById('adminStep3').style.display = 'block';
+  } else if (action === 'qc') {
+    document.getElementById('adminModal').classList.remove('show');
+    window._qcUnlocked = true;
+    var tq = setInterval(function(){ if (typeof switchTab === 'function') { clearInterval(tq); switchTab('qc'); } }, 50);
   } else if (action === 'vider') {
     document.getElementById('adminModal').classList.remove('show');
     var t3 = setInterval(function(){
@@ -316,18 +328,14 @@ style="background:none;border:0.5px solid #d0d0c8;color:#444;border-radius:8px;p
 
 <div style="flex:1"></div>
 
-<button onclick="adminViderHistorique()" 
-style="background:#e8f7e8;border:0.5px solid #4caf50;color:#2e7d32;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer"
-title="Vider l'historique — Réservé F.B.">
-🗑️ Vider historique <span style="font-size:10px;opacity:0.7">(Réservé F.B.)</span>
-</button>
+
 </div>
 <div class="tabs">
   <button class="tab active" onclick="switchTab('souches')">Souches</button>
   <button class="tab" onclick="switchTab('primers')">Primers</button>
   <button class="tab" onclick="switchTab('plasmids')">Plasmides</button>
   <button class="tab" onclick="switchTab('stats')">Statistiques</button>
-  <button class="tab" onclick="switchTab('history')">Historique stock</button>
+  <button class="tab" onclick="switchTab('qc')">🔒 Contrôle qualité</button>
 </div>
 
 <!-- TAB SOUCHES -->
@@ -447,17 +455,26 @@ title="Vider l'historique — Réservé F.B.">
 </div>
 
 <!-- TAB HISTORY -->
-<div id="tab-history" class="panel">
-  <div class="card">
-    <div id="exportBar" style="display:none" class="export-bar">
-      <span class="export-bar-text">
-        Modifications non exportées vers Excel : <span class="pending-badge" id="pendingCount">0</span>
-      </span>
-      <button class="btn-export" onclick="adminExport()">⬇ Exporter pour Excel <span style="font-size:10px;opacity:0.8">(Réservé F.B.)</span></button>
+<div id="tab-qc" class="panel">
+  <div class="card" id="qcSummary"></div>
+  <details class="qc-sec" id="qc-hist"><summary>📜 Historique stock</summary>
+    <div class="qc-body">
+      <div id="exportBar" style="display:none" class="export-bar">
+        <span class="export-bar-text">Modifications non exportées vers Excel : <span class="pending-badge" id="pendingCount">0</span></span>
+        <button class="btn-export" onclick="adminExport()">⬇ Exporter pour Excel <span style="font-size:10px;opacity:0.8">(Réservé F.B.)</span></button>
+      </div>
+      <div style="font-size:13px;color:#444;margin-bottom:12px">Historique de toutes les modifications du stock d'explants.</div>
+      <div style="text-align:right;margin-bottom:10px">
+        <button onclick="adminViderHistorique()" style="background:#fdecea;border:0.5px solid #e57373;color:#c62828;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit">🗑️ Vider l'historique</button>
+      </div>
+      <div id="historyContent"></div>
     </div>
-    <div style="font-size:13px;color:#444;margin-bottom:12px">Historique de toutes les modifications du stock d'explants.</div>
-    <div id="historyContent"></div>
-  </div>
+  </details>
+  <details class="qc-sec" id="qc-low"><summary></summary><div class="qc-body"></div></details>
+  <details class="qc-sec" id="qc-nostock"><summary></summary><div class="qc-body"></div></details>
+  <details class="qc-sec" id="qc-orphan"><summary></summary><div class="qc-body"></div></details>
+  <details class="qc-sec" id="qc-dup"><summary></summary><div class="qc-body"></div></details>
+  <details class="qc-sec" id="qc-taxa"><summary></summary><div class="qc-body"></div></details>
 </div>
 
 <!-- MODAL PLASMIDE -->
@@ -550,13 +567,14 @@ function saveLocal() {
 var modalContext = null;
 
 function switchTab(name) {
-  if (!dbReady && (name==='souches' || name==='stats' || name==='plasmids')) { showDBLoading('⏳ Données en cours de chargement...'); setTimeout(hideDBLoading,2000); return; }
+  if (name==='qc' && !window._qcUnlocked) { window._adminAction='qc'; openAdminModal(); return; }
+  if (!dbReady && (name==='souches' || name==='stats' || name==='plasmids' || name==='qc')) { showDBLoading('⏳ Données en cours de chargement...'); setTimeout(hideDBLoading,2000); return; }
   document.querySelectorAll('.tab').forEach((t,i) => {
-    t.classList.toggle('active', ['souches','primers','plasmids','stats','history'][i] === name);
+    t.classList.toggle('active', ['souches','primers','plasmids','stats','qc'][i] === name);
   });
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
-  if (name === 'history') renderHistory();
+  if (name === 'qc') { renderHistory(); renderQC(); }
   if (name === 'souches') initFilters();
   if (name === 'plasmids') initPlasmidFilters();
   if (name === 'stats') renderStats();
@@ -904,6 +922,84 @@ function updateExportBar() {
 // (l'export réel se fait via _doExport(), déclenché depuis le modal admin)
 
 // ---- HISTORY ----
+// ---- CONTROLE QUALITE (admin) ----
+function computeQC() {
+  var strains = DB.strains || {}, stocks = DB.stocks || {}, tx = DB.fungorum_taxo || {};
+  var v = function(x){ return x == null ? '' : String(x).trim(); };
+  var noStock = Object.keys(strains).filter(function(a){ return !(stocks[a] && stocks[a].length); }).sort();
+  var orphans = Object.keys(stocks).filter(function(a){ return !strains[a]; }).sort();
+  var pos = {};
+  Object.keys(stocks).forEach(function(a){ stocks[a].forEach(function(st){
+    var r = v(st.row), c = v(st.col); if (!r || !c) return;
+    var k = [v(st.room), v(st.freezer), v(st.tray), v(st.box), r, c].join('|');
+    (pos[k] = pos[k] || []).push({acc: a, qty: st.qty});
+  }); });
+  var dups = Object.keys(pos).filter(function(k){ return pos[k].length > 1; }).sort()
+    .map(function(k){ return {parts: k.split('|'), items: pos[k]}; });
+  var low = [], noQty = 0;
+  Object.keys(stocks).forEach(function(a){ stocks[a].forEach(function(st){
+    var key = a + '|' + st.room + '|' + st.freezer + '|' + st.row + '|' + st.col;
+    var mod = (typeof stockMods !== 'undefined' && stockMods[key] !== undefined);
+    var qty = Number(mod ? stockMods[key] : st.qty);
+    if (v(mod ? stockMods[key] : st.qty) === '' || isNaN(qty)) { noQty++; return; }
+    if (qty < 2) low.push({acc: a, qty: qty, mod: mod, st: st});
+  }); });
+  low.sort(function(x, y){ return x.qty - y.qty || (x.acc < y.acc ? -1 : x.acc > y.acc ? 1 : 0); });
+  var tax = {}, noTaxon = [];
+  Object.keys(strains).forEach(function(a){
+    var t = v(strains[a].taxon);
+    if (!t) { noTaxon.push(a); return; }
+    if (tx[t.toLowerCase()]) return;
+    (tax[t] = tax[t] || []).push(a);
+  });
+  var taxa = Object.keys(tax).sort().map(function(t){ return {name: t, accs: tax[t]}; });
+  return {low: low, noQty: noQty, noStock: noStock, orphans: orphans, dups: dups, noTaxon: noTaxon,
+          taxaSp: taxa.filter(function(t){ return t.name.indexOf(' ') >= 0; }),
+          taxaGen: taxa.filter(function(t){ return t.name.indexOf(' ') < 0; })};
+}
+function qcAccLink(a) { return '<span class="qc-link" onclick="openStrainFromHistory(\'' + escId(a) + '\')">' + escHtml(a) + '</span>'; }
+function qcDownload(name, header, rows) {
+  var csv = [header].concat(rows).join('\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = 'FungiSem_QC_' + name + '.csv'; a.click();
+}
+function qcSetSec(id, title, n, bodyHtml, openIfIssue) {
+  var el = document.getElementById(id);
+  el.querySelector('summary').innerHTML = title + ' — <span class="' + (n ? 'qc-warn' : 'qc-ok') + '">' + (n ? n + ' à vérifier' : '✓ aucun problème') + '</span>';
+  el.querySelector('.qc-body').innerHTML = n ? bodyHtml : '<div style="color:#aaa;font-size:13px;padding:8px 0">Rien à signaler.</div>';
+}
+function renderQC() {
+  if (!DB) return;
+  var q = computeQC(); window._qc = q;
+  var tbl = function(head, rows) { return '<div class="qc-scroll"><table class="history-table"><thead><tr>' + head.map(function(h){return '<th>'+h+'</th>';}).join('') + '</tr></thead><tbody>' + rows.join('') + '</tbody></table></div>'; };
+  var strains = DB.strains;
+  var lowStrains = {}; q.low.forEach(function(l){ lowStrains[l.acc] = 1; });
+  qcSetSec('qc-low', '⚠️ Stock bas (explants &lt; 2)', q.low.length,
+    '<button class="qc-csv" onclick="qcDownload(\'stock_bas\',\'Accession;Taxon;Salle;Congelateur;Tiroir;Boite;Ligne;Colonne;Explants\',window._qc.low.map(function(l){return [l.acc,DB.strains[l.acc]?DB.strains[l.acc].taxon:\'\',l.st.room,l.st.freezer,l.st.tray,l.st.box,l.st.row,l.st.col,l.qty].join(\';\');}))">⬇ CSV</button>' +
+    '<div style="font-size:12px;color:#777;margin-bottom:8px">' + q.low.length + ' ligne(s) de stock pour ' + Object.keys(lowStrains).length + ' souche(s), quantité strictement inférieure à 2 (modifications locales non exportées incluses).' + (q.noQty ? ' ' + q.noQty + ' ligne(s) sans quantité renseignée ignorée(s).' : '') + '</div>' +
+    tbl(['Souche','Taxon','Salle','Congélateur','Tiroir','Boîte','Ligne','Col.','Explants'], q.low.map(function(l){ var s = strains[l.acc] || {}; var st = l.st;
+      return '<tr><td>'+qcAccLink(l.acc)+'</td><td><em>'+escHtml(s.taxon||'—')+'</em></td><td>'+escHtml(st.room)+'</td><td>'+escHtml(st.freezer)+'</td><td>'+escHtml(st.tray)+'</td><td>'+escHtml(st.box)+'</td><td>'+escHtml(st.row)+'</td><td>'+escHtml(st.col)+'</td><td style="font-weight:600;color:'+(l.qty<1?'#c62828':'#E07B00')+'">'+l.qty+(l.mod?' <span style="font-size:10px;color:#aaa">(modifié)</span>':'')+'</td></tr>'; })));
+  qcSetSec('qc-nostock', '📦 Souches sans stock', q.noStock.length,
+    '<button class="qc-csv" onclick="qcDownload(\'sans_stock\',\'Accession;Taxon;Projet\',window._qc.noStock.map(function(a){return [a,DB.strains[a].taxon,DB.strains[a].project].join(\';\');}))">⬇ CSV</button>' +
+    '<div style="font-size:12px;color:#777;margin-bottom:8px">Souches présentes dans l\'onglet Strains sans aucune ligne de stock.</div>' +
+    tbl(['Souche','Taxon','Projet'], q.noStock.map(function(a){ var s = strains[a]; return '<tr><td>'+qcAccLink(a)+'</td><td><em>'+escHtml(s.taxon||'—')+'</em></td><td>'+escHtml(s.project||'—')+'</td></tr>'; })));
+  qcSetSec('qc-orphan', '🔗 Lignes de stock sans souche correspondante', q.orphans.length,
+    tbl(['Accession (stock)','Nb lignes','Emplacement'], q.orphans.map(function(a){ return DB.stocks[a].map(function(st){ return '<tr><td>'+escHtml(a)+'</td><td>1</td><td style="font-size:11px;color:#888">'+escHtml(st.room)+' · '+escHtml(st.freezer)+' · Tir.'+escHtml(st.tray)+' Bx'+escHtml(st.box)+' L'+escHtml(st.row)+' C'+escHtml(st.col)+'</td></tr>'; }).join(''); })));
+  qcSetSec('qc-dup', '📍 Doublons de positionnement', q.dups.length,
+    '<button class="qc-csv" onclick="qcDownload(\'doublons_position\',\'Salle;Congelateur;Tiroir;Boite;Ligne;Colonne;Souches\',window._qc.dups.map(function(d){return d.parts.concat([d.items.map(function(i){return i.acc;}).join(\' / \')]).join(\';\');}))">⬇ CSV</button>' +
+    '<div style="font-size:12px;color:#777;margin-bottom:8px">Plusieurs lignes de stock à la même salle / congélateur / tiroir / boîte / ligne / colonne (lignes sans ligne ou colonne ignorées).</div>' +
+    tbl(['Salle','Congélateur','Tiroir','Boîte','Ligne','Col.','Souches'], q.dups.map(function(d){ return '<tr>'+d.parts.map(function(p){return '<td>'+escHtml(p)+'</td>';}).join('')+'<td>'+d.items.map(function(i){return qcAccLink(i.acc)+' <span style="color:#aaa">('+escHtml(i.qty)+')</span>';}).join('<br>')+'</td></tr>'; })));
+  var taxRows = function(list) { return list.map(function(t){ return '<tr><td><em>'+escHtml(t.name)+'</em></td><td>'+t.accs.length+'</td><td style="font-size:11px">'+t.accs.slice(0,4).map(qcAccLink).join(', ')+(t.accs.length>4?' …':'')+'</td></tr>'; }); };
+  var nTax = q.taxaSp.length + q.taxaGen.length;
+  qcSetSec('qc-taxa', '🧬 Taxons absents de l\'Index fungorum', nTax,
+    '<button class="qc-csv" onclick="qcDownload(\'taxons_absents\',\'Taxon;Nb souches;Souches\',window._qc.taxaSp.concat(window._qc.taxaGen).map(function(t){return [t.name,t.accs.length,t.accs.join(\' / \')].join(\';\');}))">⬇ CSV</button>' +
+    '<div style="font-size:13px;font-weight:500;margin:4px 0 6px">Espèces (genre + épithète) : ' + q.taxaSp.length + '</div>' + tbl(['Taxon','Nb souches','Exemples'], taxRows(q.taxaSp)) +
+    '<div style="font-size:13px;font-weight:500;margin:14px 0 6px">Noms sans épithète (genre ou rang supérieur) : ' + q.taxaGen.length + '</div>' + tbl(['Taxon','Nb souches','Exemples'], taxRows(q.taxaGen)) +
+    (q.noTaxon.length ? '<div style="font-size:12px;color:#E07B00;margin-top:10px">' + q.noTaxon.length + ' souche(s) sans taxon renseigné.</div>' : ''));
+  document.getElementById('qcSummary').innerHTML = '<div style="font-size:13px;color:#444">Contrôles calculés sur les données chargées (<b>' + Object.keys(strains).length + '</b> souches, <b>' + Object.keys(DB.stocks).length + '</b> souches avec stock). Ouvre une section pour le détail.</div>';
+}
+
 function renderHistory() {
   updateExportBar();
   const el = document.getElementById('historyContent');
@@ -1644,6 +1740,10 @@ function _doExport() {
 
 
 function adminViderHistorique() {
+  if (window._qcUnlocked) {
+    if (confirm("Vider tout l'historique (local et modifications.json sur GitHub) ? Cette action est irréversible.")) _doViderHistorique();
+    return;
+  }
   _adminAction = 'vider';
   openAdminModal();
 }
