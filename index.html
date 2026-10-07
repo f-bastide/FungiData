@@ -992,11 +992,10 @@ function renderQC() {
     '<div style="font-size:12px;color:#777;margin-bottom:8px">Plusieurs lignes de stock à la même salle / congélateur / tiroir / boîte / ligne / colonne (lignes sans ligne ou colonne ignorées).</div>' +
     tbl(['Salle','Congélateur','Tiroir','Boîte','Ligne','Col.','Souches','Réf. autres collections'], q.dups.map(function(d){ return '<tr>'+d.parts.map(function(p){return '<td>'+escHtml(p)+'</td>';}).join('')+'<td>'+d.items.map(function(i){return qcAccLink(i.acc)+' <span style="color:#aaa">('+escHtml(i.qty)+')</span>';}).join('<br>')+'</td><td>'+d.items.map(function(i){return escHtml(qcRef(i.acc)||'—');}).join('<br>')+'</td></tr>'; })));
   var taxRows = function(list) { return list.map(function(t){ return '<tr><td><em>'+escHtml(t.name)+'</em></td><td>'+t.accs.length+'</td><td style="font-size:11px">'+t.accs.slice(0,4).map(qcAccLink).join(', ')+(t.accs.length>4?' …':'')+'</td></tr>'; }); };
-  var nTax = q.taxaSp.length + q.taxaGen.length;
+  var nTax = q.taxaSp.length;
   qcSetSec('qc-taxa', '🧬 Taxons absents de l\'Index fungorum', nTax,
-    '<button class="qc-csv" onclick="qcDownload(\'taxons_absents\',\'Taxon;Nb souches;Souches\',window._qc.taxaSp.concat(window._qc.taxaGen).map(function(t){return [t.name,t.accs.length,t.accs.join(\' / \')].join(\';\');}))">⬇ CSV</button>' +
-    '<div style="font-size:13px;font-weight:500;margin:4px 0 6px">Espèces (genre + épithète) : ' + q.taxaSp.length + '</div>' + tbl(['Taxon','Nb souches','Exemples'], taxRows(q.taxaSp)) +
-    '<div style="font-size:13px;font-weight:500;margin:14px 0 6px">Noms sans épithète (genre ou rang supérieur) : ' + q.taxaGen.length + '</div>' + tbl(['Taxon','Nb souches','Exemples'], taxRows(q.taxaGen)) +
+    '<button class="qc-csv" onclick="qcDownload(\'taxons_absents\',\'Taxon;Nb souches;Souches\',window._qc.taxaSp.map(function(t){return [t.name,t.accs.length,t.accs.join(\' / \')].join(\';\');}))">⬇ CSV</button>' +
+    '<div style="font-size:12px;color:#777;margin-bottom:8px">Noms d\'espèce (genre + épithète) absents de l\'Index fungorum : ' + q.taxaSp.length + '.</div>' + tbl(['Taxon','Nb souches','Exemples'], taxRows(q.taxaSp)) +
     (q.noTaxon.length ? '<div style="font-size:12px;color:#E07B00;margin-top:10px">' + q.noTaxon.length + ' souche(s) sans taxon renseigné.</div>' : ''));
   document.getElementById('qcSummary').innerHTML = '<div style="font-size:13px;color:#444">Contrôles calculés sur les données chargées (<b>' + Object.keys(strains).length + '</b> souches, <b>' + Object.keys(DB.stocks).length + '</b> souches avec stock). Ouvre une section pour le détail.</div>';
 }
