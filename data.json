@@ -1528,7 +1528,6 @@
 ,"FungiSem 01608":{"accession":"FungiSem 01608","collection":"FungiSem","project":"Diaporthe","other_numbers":"01-07-07-69","other_names":"01-07-07-69 / DE013","morphology":"Filamentous","division":"Ascomycota","order":"Diaporthales","genus":"Diaporthe","taxon":"Diaporthe eres","habitat":"Plant","sampling":"Daucus carota PG","locality":"Pays de la Loire","isolation_date":"2014","genome_acc":"","genome_link":"","souche_ogm":"","souche_mere_ogm":"","fiches_transformants":"","lat":43.0728,"lon":2.3853}
 ,"FungiSem 01610":{"accession":"FungiSem 01610","collection":"FungiSem","project":"Diaporthe","other_numbers":"01-07-07-70","other_names":"01-07-07-70 / DA049","morphology":"Filamentous","division":"Ascomycota","order":"Diaporthales","genus":"Diaporthe","taxon":"Diaporthe angelicae","habitat":"Plant","sampling":"Daucus carota PG","locality":"Pays de la Loire","isolation_date":"2013","genome_acc":"","genome_link":"","souche_ogm":"","souche_mere_ogm":"","fiches_transformants":"","lat":47.6667,"lon":1.4167}
 ,"FungiSem 01613":{"accession":"FungiSem 01613","collection":"FungiSem","project":"Diaporthe","other_numbers":"01-07-07-71","other_names":"01-07-07-71 / DA052","morphology":"Filamentous","division":"Ascomycota","order":"Diaporthales","genus":"Diaporthe","taxon":"Diaporthe angelicae","habitat":"Plant","sampling":"Daucus carota PG","locality":"Nouvelle-Aquitaine","isolation_date":"2013","genome_acc":"","genome_link":"","souche_ogm":"","souche_mere_ogm":"","fiches_transformants":"","lat":44.3494,"lon":0.4810}
-,"FungiSem 01614":{"accession":"FungiSem 01614","collection":"FungiSem","project":"Diaporthe","other_numbers":"","other_names":"","morphology":"Filamentous","division":"","order":"","genus":"","taxon":"","habitat":"","sampling":"","locality":"","isolation_date":"2013","genome_acc":"","genome_link":"","souche_ogm":"","souche_mere_ogm":"","fiches_transformants":"","lat":null,"lon":null}
 ,"FungiSem 01616":{"accession":"FungiSem 01616","collection":"FungiSem","project":"Diaporthe","other_numbers":"01-07-07-72","other_names":"01-07-07-72 / DA050","morphology":"Filamentous","division":"Ascomycota","order":"Diaporthales","genus":"Diaporthe","taxon":"Diaporthe angelicae","habitat":"Plant","sampling":"Daucus carota PG","locality":"Centre","isolation_date":"2013","genome_acc":"","genome_link":"","souche_ogm":"","souche_mere_ogm":"","fiches_transformants":"","lat":47.6667,"lon":1.4167}
 ,"FungiSem 01618":{"accession":"FungiSem 01618","collection":"FungiSem","project":"Diaporthe","other_numbers":"01-07-07-73","other_names":"01-07-07-73 / DA051","morphology":"Filamentous","division":"Ascomycota","order":"Diaporthales","genus":"Diaporthe","taxon":"Diaporthe angelicae","habitat":"Plant","sampling":"Daucus carota PG","locality":"Centre","isolation_date":"2013","genome_acc":"","genome_link":"","souche_ogm":"","souche_mere_ogm":"","fiches_transformants":"","lat":47.6667,"lon":1.4167}
 ,"FungiSem 01620":{"accession":"FungiSem 01620","collection":"FungiSem","project":"Diaporthe","other_numbers":"01-07-07-74","other_names":"01-07-07-74","morphology":"Filamentous","division":"Ascomycota","order":"Diaporthales","genus":"Diaporthe","taxon":"Diaporthe angelicae","habitat":"Plant","sampling":"Daucus carota PG","locality":"Centre","isolation_date":"2013","genome_acc":"","genome_link":"","souche_ogm":"","souche_mere_ogm":"","fiches_transformants":"","lat":47.4172,"lon":1.7645}
@@ -5125,7 +5124,7 @@
 ,"FungiSem 00019":[{"room":"A2.02","freezer":"IRHS000582","tray":"1","box":"3","row":"6","col":"1","qty":6}]
 ,"FungiSem 00020":[{"room":"A2.02","freezer":"IRHS000582","tray":"1","box":"3","row":"6","col":"2","qty":6}]
 ,"FungiSem 00013":[{"room":"A2.02","freezer":"IRHS000582","tray":"1","box":"3","row":"6","col":"3","qty":6}]
-,"FungiSem 01999":[{"room":"A2.02","freezer":"IRHS000582","tray":"4","box":"4","row":"6","col":"6","qty":6},{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"3","row":"3","col":"7","qty":6}]
+,"FungiSem 01999":[{"room":"A2.02","freezer":"IRHS000582","tray":"4","box":"4","row":"6","col":"6","qty":6},{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"3","row":"3","col":"6","qty":6}]
 ,"FungiSem 01069":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"3","col":"1","qty":5}]
 ,"FungiSem 01070":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"3","col":"2","qty":5}]
 ,"FungiSem 01071":[{"room":"A2.02","freezer":"IRHS000582","tray":"3","box":"1","row":"3","col":"3","qty":5}]
@@ -5610,7 +5609,6 @@
 ,"FungiSem 02297":[{"room":"A2.02","freezer":"IRHS000582","tray":"5","box":"1","row":"3","col":"3","qty":6}]
 ,"FungiSem 02298":[{"room":"A2.02","freezer":"IRHS000582","tray":"5","box":"1","row":"3","col":"4","qty":6}]
 ,"FungiSem 02299":[{"room":"A2.02","freezer":"IRHS000582","tray":"5","box":"1","row":"3","col":"5","qty":6}]
-,"FungiSem 02230":[{"room":"A2.02","freezer":"IRHS000582","tray":"5","box":"1","row":"3","col":"6","qty":6},{"room":"A2.02","freezer":"IRHS000582","tray":"6","box":"1","row":"3","col":"4","qty":6}]
 ,"FungiSem 02301":[{"room":"A2.02","freezer":"IRHS000582","tray":"5","box":"1","row":"3","col":"7","qty":6}]
 ,"FungiSem 02302":[{"room":"A2.02","freezer":"IRHS000582","tray":"5","box":"1","row":"3","col":"8","qty":6}]
 ,"FungiSem 02303":[{"room":"A2.02","freezer":"IRHS000582","tray":"5","box":"1","row":"3","col":"9","qty":6}]
@@ -6100,7 +6098,7 @@
 ,"FungiSem 02827":[{"room":"C 239","freezer":"Etage Haut","tray":"6","box":"4","row":"8","col":"7","qty":6}]
 ,"FungiSem 02828":[{"room":"C 239","freezer":"Etage Haut","tray":"6","box":"4","row":"8","col":"8","qty":6}]
 ,"FungiSem 02829":[{"room":"C 239","freezer":"Etage Haut","tray":"6","box":"4","row":"8","col":"9","qty":6}]
-,"FungiSem 02830":[{"room":"C 239","freezer":"Etage Haut","tray":"6","box":"4","row":"9","col":"4","qty":6}]
+,"FungiSem 02830":[{"room":"C 239","freezer":"Etage Haut","tray":"6","box":"4","row":"9","col":"1","qty":6}]
 ,"FungiSem 02831":[{"room":"C 239","freezer":"Etage Haut","tray":"6","box":"4","row":"9","col":"2","qty":6}]
 ,"FungiSem 02832":[{"room":"C 239","freezer":"Etage Haut","tray":"6","box":"4","row":"9","col":"3","qty":6}]
 ,"FungiSem 02833":[{"room":"C 239","freezer":"Etage Haut","tray":"6","box":"4","row":"9","col":"4","qty":6}]
@@ -6846,6 +6844,7 @@
 ,"FungiSem 02227":[{"room":"A2.02","freezer":"IRHS000582","tray":"6","box":"1","row":"3","col":"1","qty":6}]
 ,"FungiSem 02228":[{"room":"A2.02","freezer":"IRHS000582","tray":"6","box":"1","row":"3","col":"2","qty":6}]
 ,"FungiSem 02229":[{"room":"A2.02","freezer":"IRHS000582","tray":"6","box":"1","row":"3","col":"3","qty":6}]
+,"FungiSem 02230":[{"room":"A2.02","freezer":"IRHS000582","tray":"6","box":"1","row":"3","col":"4","qty":6}]
 ,"FungiSem 02231":[{"room":"A2.02","freezer":"IRHS000582","tray":"6","box":"1","row":"3","col":"5","qty":6}]
 ,"FungiSem 02232":[{"room":"A2.02","freezer":"IRHS000582","tray":"6","box":"1","row":"3","col":"6","qty":6}]
 ,"FungiSem 02233":[{"room":"A2.02","freezer":"IRHS000582","tray":"6","box":"1","row":"3","col":"7","qty":6}]
@@ -7443,8 +7442,8 @@
 ,"FungiSem 03631":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"3","row":"3","col":"8","qty":6}]
 ,"FungiSem 03632":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"3","row":"3","col":"9","qty":6}]
 ,"FungiSem 03633":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"3","row":"4","col":"1","qty":6}]
-,"FungiSem 03634":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"3","row":"4","col":"1","qty":6}]
-,"FungiSem 03635":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"3","row":"4","col":"1","qty":6}]
+,"FungiSem 03634":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"3","row":"4","col":"2","qty":6}]
+,"FungiSem 03635":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"3","row":"4","col":"3","qty":6}]
 ,"FungiSem 01935":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"4","row":"6","col":"8","qty":6}]
 ,"FungiSem 01937":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"4","row":"7","col":"1","qty":6}]
 ,"FungiSem 01941":[{"room":"A2.02","freezer":"IRHS000582","tray":"10","box":"4","row":"7","col":"5","qty":6}]
@@ -7486,7 +7485,7 @@
 ,"FungiSem 03455":[{"room":"A2.02","freezer":"IRHS000582","tray":"11","box":"1","row":"3","col":"5","qty":6}]
 ,"FungiSem 03663":[{"room":"A2.02","freezer":"IRHS000582","tray":"9","box":"4","row":"1","col":"9","qty":6}]
 ,"FungiSem 03667":[{"room":"A2.02","freezer":"IRHS000582","tray":"9","box":"4","row":"2","col":"1","qty":5}]
-,"FungiSem 03668":[{"room":"A2.02","freezer":"IRHS000582","tray":"9","box":"4","row":"2","col":"1","qty":6}]
+,"FungiSem 03668":[{"room":"A2.02","freezer":"IRHS000582","tray":"9","box":"4","row":"2","col":"2","qty":6}]
 ,"FungiSem 03669":[{"room":"A2.02","freezer":"IRHS000582","tray":"9","box":"4","row":"2","col":"2","qty":6}]
 ,"FungiSem 03670":[{"room":"A2.02","freezer":"IRHS000582","tray":"9","box":"4","row":"2","col":"3","qty":6}]
 ,"FungiSem 03671":[{"room":"A2.02","freezer":"IRHS000582","tray":"9","box":"4","row":"2","col":"4","qty":6}]
@@ -8300,7 +8299,7 @@
 ,"FungiSem 04543":[{"room":"A2.02","freezer":"IRHS000582","tray":"12","box":"3","row":"6","col":"6","qty":6}]
 ,"FungiSem 04544":[{"room":"A2.02","freezer":"IRHS000582","tray":"12","box":"3","row":"6","col":"7","qty":6}]
 ,"FungiSem 04545":[{"room":"A2.02","freezer":"IRHS000582","tray":"12","box":"3","row":"6","col":"8","qty":6}]
-,"FungiSem 04546":[{"room":"A2.02","freezer":"IRHS000582","tray":"12","box":"3","row":"7","col":"9","qty":6}]
+,"FungiSem 04546":[{"room":"A2.02","freezer":"IRHS000582","tray":"12","box":"3","row":"6","col":"9","qty":6}]
 ,"FungiSem 04547":[{"room":"A2.02","freezer":"IRHS000582","tray":"12","box":"3","row":"7","col":"1","qty":6}]
 ,"FungiSem 04548":[{"room":"A2.02","freezer":"IRHS000582","tray":"12","box":"3","row":"7","col":"2","qty":6}]
 ,"FungiSem 04549":[{"room":"A2.02","freezer":"IRHS000582","tray":"12","box":"3","row":"7","col":"3","qty":6}]
@@ -15429,6 +15428,10 @@
 ,"colletotrichum linicola":["Colletotrichum linicola","Gloeosporium lini","Colletotrichum lini"]
 ,"gloeosporium lini":["Colletotrichum linicola","Gloeosporium lini","Colletotrichum lini"]
 ,"colletotrichum lini":["Colletotrichum linicola","Gloeosporium lini","Colletotrichum lini"]
+,"colletotrichum lindemuthianum":["Colletotrichum lindemuthianum","Gloeosporium lindemuthianum","Glomerella lindemuthiana","Glomerella cingulata f.sp. phaseoli"]
+,"gloeosporium lindemuthianum":["Colletotrichum lindemuthianum","Gloeosporium lindemuthianum","Glomerella lindemuthiana","Glomerella cingulata f.sp. phaseoli"]
+,"glomerella lindemuthiana":["Colletotrichum lindemuthianum","Gloeosporium lindemuthianum","Glomerella lindemuthiana","Glomerella cingulata f.sp. phaseoli"]
+,"glomerella cingulata f.sp. phaseoli":["Colletotrichum lindemuthianum","Gloeosporium lindemuthianum","Glomerella lindemuthiana","Glomerella cingulata f.sp. phaseoli"]
 ,"curvularia spicifera":["Curvularia spicifera","Brachycladium spiciferum","Dendryphion spiciferum","Helminthosporium spiciferum","Bipolaris spicifera","Drechslera spicifera","Helminthosporium tetramerum","Curvularia tetramera","Bipolaris tetramera","Drechslera tetramera","Cochliobolus spicifer","Pseudocochliobolus spicifer"]
 ,"brachycladium spiciferum":["Curvularia spicifera","Brachycladium spiciferum","Dendryphion spiciferum","Helminthosporium spiciferum","Bipolaris spicifera","Drechslera spicifera","Helminthosporium tetramerum","Curvularia tetramera","Bipolaris tetramera","Drechslera tetramera","Cochliobolus spicifer","Pseudocochliobolus spicifer"]
 ,"dendryphion spiciferum":["Curvularia spicifera","Brachycladium spiciferum","Dendryphion spiciferum","Helminthosporium spiciferum","Bipolaris spicifera","Drechslera spicifera","Helminthosporium tetramerum","Curvularia tetramera","Bipolaris tetramera","Drechslera tetramera","Cochliobolus spicifer","Pseudocochliobolus spicifer"]
@@ -16057,6 +16060,7 @@
 ,"plenodomus biglobosus":["Plenodomus biglobosus","Leptosphaeria biglobosa"]
 ,"leptosphaeria biglobosa":["Plenodomus biglobosus","Leptosphaeria biglobosa"]
 ,"pythium torulosum":["Pythium torulosum"]
+,"pythium ; globisporangium":["Pythium ; Globisporangium"]
 ,"rhizoctonia solani":["Rhizoctonia solani","Pellicularia solani","Pellicularia filamentosa f. solani","Moniliopsis solani","Rhizoctonia napae","Hypochnus cucumeris","Thanatephorus cucumeris","Rhizoctonia betae","Hypochnus solani","Corticium solani","Corticium vagum subsp. solani","Botryobasidium solani","Ceratobasidium solani","Hypochnus filamentosus","Pellicularia filamentosa","Rhizoctonia fusca","Pachysterigma griseum","Tulasnella grisea","Corticium vagum var. solani","Moniliopsis aderholdii","Rhizoctonia aderholdii","Rhizoctonia mucoroides","Hypochnus euphrasiae","Sclerotium irregulare","Rhizoctonia potomacensis","Sclerotium griseum","Rhizoctonia grisea","Rhizoctonia melongenae","Rhizoctonia dimorpha","Rhizoctonia ferruginea","Rhizoctonia macrosclerotia","Rhizoctonia pallida","Rhizoctonia gossypii","Rhizoctonia gossypii var. anatolica","Rhizoctonia gossypii var. egyptiaca","Rhizoctonia solani var. ambigua","Corticium areolatum","Pellicularia filamentosa f.sp. sasakii","Rhizoctonia choussii","Thanatephorus corchori","Rhizoctonia solani f. sasakii"]
 ,"pellicularia solani":["Rhizoctonia solani","Pellicularia solani","Pellicularia filamentosa f. solani","Moniliopsis solani","Rhizoctonia napae","Hypochnus cucumeris","Thanatephorus cucumeris","Rhizoctonia betae","Hypochnus solani","Corticium solani","Corticium vagum subsp. solani","Botryobasidium solani","Ceratobasidium solani","Hypochnus filamentosus","Pellicularia filamentosa","Rhizoctonia fusca","Pachysterigma griseum","Tulasnella grisea","Corticium vagum var. solani","Moniliopsis aderholdii","Rhizoctonia aderholdii","Rhizoctonia mucoroides","Hypochnus euphrasiae","Sclerotium irregulare","Rhizoctonia potomacensis","Sclerotium griseum","Rhizoctonia grisea","Rhizoctonia melongenae","Rhizoctonia dimorpha","Rhizoctonia ferruginea","Rhizoctonia macrosclerotia","Rhizoctonia pallida","Rhizoctonia gossypii","Rhizoctonia gossypii var. anatolica","Rhizoctonia gossypii var. egyptiaca","Rhizoctonia solani var. ambigua","Corticium areolatum","Pellicularia filamentosa f.sp. sasakii","Rhizoctonia choussii","Thanatephorus corchori","Rhizoctonia solani f. sasakii"]
 ,"pellicularia filamentosa f. solani":["Rhizoctonia solani","Pellicularia solani","Pellicularia filamentosa f. solani","Moniliopsis solani","Rhizoctonia napae","Hypochnus cucumeris","Thanatephorus cucumeris","Rhizoctonia betae","Hypochnus solani","Corticium solani","Corticium vagum subsp. solani","Botryobasidium solani","Ceratobasidium solani","Hypochnus filamentosus","Pellicularia filamentosa","Rhizoctonia fusca","Pachysterigma griseum","Tulasnella grisea","Corticium vagum var. solani","Moniliopsis aderholdii","Rhizoctonia aderholdii","Rhizoctonia mucoroides","Hypochnus euphrasiae","Sclerotium irregulare","Rhizoctonia potomacensis","Sclerotium griseum","Rhizoctonia grisea","Rhizoctonia melongenae","Rhizoctonia dimorpha","Rhizoctonia ferruginea","Rhizoctonia macrosclerotia","Rhizoctonia pallida","Rhizoctonia gossypii","Rhizoctonia gossypii var. anatolica","Rhizoctonia gossypii var. egyptiaca","Rhizoctonia solani var. ambigua","Corticium areolatum","Pellicularia filamentosa f.sp. sasakii","Rhizoctonia choussii","Thanatephorus corchori","Rhizoctonia solani f. sasakii"]
@@ -17093,6 +17097,10 @@
 ,"colletotrichum linicola":{"current":"Colletotrichum linicola","genus":"Colletotrichum","division":"Ascomycota","order":"Glomerellales","morphology":"Filamentous"}
 ,"gloeosporium lini":{"current":"Colletotrichum linicola","genus":"Colletotrichum","division":"Ascomycota","order":"Glomerellales","morphology":"Filamentous"}
 ,"colletotrichum lini":{"current":"Colletotrichum linicola","genus":"Colletotrichum","division":"Ascomycota","order":"Glomerellales","morphology":"Filamentous"}
+,"colletotrichum lindemuthianum":{"current":"Colletotrichum lindemuthianum","genus":"Colletotrichum","division":"Ascomycota","order":"Glomerellales","morphology":"Filamentous"}
+,"gloeosporium lindemuthianum":{"current":"Colletotrichum lindemuthianum","genus":"Colletotrichum","division":"Ascomycota","order":"Glomerellales","morphology":"Filamentous"}
+,"glomerella lindemuthiana":{"current":"Colletotrichum lindemuthianum","genus":"Colletotrichum","division":"Ascomycota","order":"Glomerellales","morphology":"Filamentous"}
+,"glomerella cingulata f.sp. phaseoli":{"current":"Colletotrichum lindemuthianum","genus":"Colletotrichum","division":"Ascomycota","order":"Glomerellales","morphology":"Filamentous"}
 ,"curvularia spicifera":{"current":"Curvularia spicifera","genus":"Curvularia","division":"Ascomycota","order":"Pleosporales","morphology":"Filamentous"}
 ,"brachycladium spiciferum":{"current":"Curvularia spicifera","genus":"Curvularia","division":"Ascomycota","order":"Pleosporales","morphology":"Filamentous"}
 ,"dendryphion spiciferum":{"current":"Curvularia spicifera","genus":"Curvularia","division":"Ascomycota","order":"Pleosporales","morphology":"Filamentous"}
@@ -17721,6 +17729,7 @@
 ,"plenodomus biglobosus":{"current":"Plenodomus biglobosus","genus":"Plenodomus","division":"Ascomycota","order":"Pleosporales","morphology":"Filamentous"}
 ,"leptosphaeria biglobosa":{"current":"Plenodomus biglobosus","genus":"Plenodomus","division":"Ascomycota","order":"Pleosporales","morphology":"Filamentous"}
 ,"pythium torulosum":{"current":"Pythium torulosum","genus":"Pythium","division":"Oomycota","order":"Pythiales","morphology":"Filamentous"}
+,"pythium ; globisporangium":{"current":"Pythium ; Globisporangium","genus":"Pythium ; Globisporangium","division":"Oomycota","order":"Pythiales","morphology":"Filamentous"}
 ,"rhizoctonia solani":{"current":"Rhizoctonia solani","genus":"Rhizoctonia","division":"Basidiomycota","order":"Cantharellales","morphology":"Filamentous"}
 ,"pellicularia solani":{"current":"Rhizoctonia solani","genus":"Rhizoctonia","division":"Basidiomycota","order":"Cantharellales","morphology":"Filamentous"}
 ,"pellicularia filamentosa f. solani":{"current":"Rhizoctonia solani","genus":"Rhizoctonia","division":"Basidiomycota","order":"Cantharellales","morphology":"Filamentous"}
@@ -19724,7 +19733,6 @@
 ,["FungiSem 01608","01-07-07-69 / DE013"]
 ,["FungiSem 01610","01-07-07-70 / DA049"]
 ,["FungiSem 01613","01-07-07-71 / DA052"]
-,["FungiSem 01614",""]
 ,["FungiSem 01616","01-07-07-72 / DA050"]
 ,["FungiSem 01618","01-07-07-73 / DA051"]
 ,["FungiSem 01620","01-07-07-74"]
