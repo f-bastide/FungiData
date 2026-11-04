@@ -14111,6 +14111,10 @@
 ,{"name":"3’Flanking_R ","sequence":"ttggtctcaagcgTGGTGCATCTGGTGTTGCCTACT","stock":"3774","room":"A2.09 - Congélateur 8"}
 ,{"name":"5’Flanking_F ","sequence":"ttggtctcaggagTCAACACGCGTCTGAACTGAGTG","stock":"3775","room":"A2.09 - Congélateur 8"}
 ,{"name":"5’Flanking_R ","sequence":"ttggtctcaagcgTTGTGTAATATGCACTACAGTAGGGTAAGGC","stock":"3776","room":"A2.09 - Congélateur 8"}
+,{"name":"AR_L2-5’F","sequence":"TCAACACGCGTCTGAACTGAGTG","stock":"3777","room":"A2.09 - Congélateur 8"}
+,{"name":"AR_L2-3’R ","sequence":"TGGTGCATCTGGTGTTGCCTACT","stock":"3778","room":"A2.09 - Congélateur 8"}
+,{"name":"JC_L2-5’F ","sequence":"ATATGGCATACGCCTGCTCTCG","stock":"3779","room":"A2.09 - Congélateur 8"}
+,{"name":"JC_L2-3’R ","sequence":"TTATAAACTTCAGGCAGCTACGGCTCG","stock":"3780","room":"A2.09 - Congélateur 8"}
 ],
 "plasmids":[
 {"name":"pICH47751","box":" ","column":"","row":"","level":"1","position":"3","role":"Acceptor","sens":"Forward","flank5":"AATG","flank3":"GCTT","resistance":"Ampicillin","dose":" 100 µg/mL","insert":"Empty","selection":"LacZ","validation_primers":"","selection_gene_size":"~650","backbone":"/","combinaison":"/","map_link":"","stock":"Yes","miniprep":""}
