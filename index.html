@@ -93,6 +93,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .multi-other-name{font-style:normal;color:#888;font-size:11px;margin-left:4px}
 .multi-loc{width:180px;flex:none;color:#555;}
 .multi-sampling{width:180px;flex:none;color:#777;font-size:12px;padding-left:15px;}
+.pl-scroll{overflow-x:auto;background:#fff;border:0.5px solid #e0e0d8;border-radius:8px}
+.pl-table{width:100%;border-collapse:collapse;font-size:13px}
+.pl-table th{text-align:left;font-weight:500;color:#888;font-size:12px;padding:8px 12px;border-bottom:0.5px solid #e0e0d8;white-space:nowrap;background:#fafaf7}
+.pl-table td{padding:8px 12px;border-bottom:0.5px solid #f0f0eb;vertical-align:top;color:#444}
+.pl-table tbody tr{cursor:pointer;transition:background 0.15s}
+.pl-table tbody tr:hover{background:#f4faf7}
+.pl-table tbody tr:last-child td{border-bottom:none}
+.pl-table td.pl-name{font-weight:500;color:#1D9E75;white-space:nowrap}
+.pl-table td.pl-role,.pl-table td.pl-comm{min-width:160px}
+.pl-table a{color:#1D9E75;text-decoration:none;white-space:nowrap}
+.pl-table a:hover{text-decoration:underline}
 
 .primer-result{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#fff;border-radius:8px;border:0.5px solid #e0e0d8;margin-bottom:6px;font-size:13px}
 .primer-name{font-weight:600;color:#333;min-width:120px}
@@ -1085,7 +1096,7 @@ var plasmidFilterFields = [
 var plasmidFiltersInited = false;
 var plasmidFieldLabels = {
   name:'Nom du plasmide', box:'Box', column:'Colonne', row:'Ligne',
-  level:'Level', position:'Position', role:'Role', sens:'Sens',
+  level:'Level', position:'Position', role:'Role', commentaire:'Commentaire', sens:'Sens',
   flank5:"5' Flank", flank3:"3' Flank", resistance:'Resistance',
   dose:'Dose antibiotique', insert:'Insert', selection:'Selection',
   validation_primers:'Validation primers', selection_gene_size:'Selection gene size',
@@ -1158,13 +1169,26 @@ function runPlasmidSearch() {
     return;
   }
 
-  document.getElementById('plasmidResults').innerHTML = results.slice(0,300).map((p,idx) => `
-    <div class="multi-result-row" onclick="openPlasmidDetail(${idx})" style="cursor:pointer">
-      <span class="multi-acc">${escHtml(p.name || '—')}</span>
-      <span class="multi-taxon">${escHtml(p.role || '—')}</span>
-      <span class="multi-loc">${escHtml(p.backbone || '—')}</span>
-      <span class="multi-sampling">Stock : ${escHtml(p.stock || '—')}</span>
-    </div>`).join('') +
+  const plVal = v => { v = (v == null ? '' : String(v).trim()); return (!v || v === 'None' || v === '/') ? '—' : escHtml(v); };
+  const plRows = results.slice(0,300).map((p,idx) => {
+    const link = (p.map_link || '').toString().trim();
+    const linkHtml = (link && link !== 'None' && link !== '/' && /^https?:\/\//i.test(link))
+      ? `<a href="${escHtml(link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Ouvrir la carte ↗</a>`
+      : '—';
+    return `<tr onclick="openPlasmidDetail(${idx})">
+        <td class="pl-name">${plVal(p.name)}</td>
+        <td>${plVal(p.level)}</td>
+        <td>${plVal(p.position)}</td>
+        <td class="pl-role">${plVal(p.role)}</td>
+        <td class="pl-comm">${plVal(p.commentaire)}</td>
+        <td>${linkHtml}</td>
+      </tr>`;
+  }).join('');
+  document.getElementById('plasmidResults').innerHTML =
+    `<div class="pl-scroll"><table class="pl-table">
+      <thead><tr><th>Plasmid Names</th><th>Level</th><th>Position</th><th>Role</th><th>Commentaire</th><th>Lien Carte Plasmide</th></tr></thead>
+      <tbody>${plRows}</tbody>
+    </table></div>` +
     (results.length > 300 ? `<div style="text-align:center;padding:10px;font-size:12px;color:#aaa">…${results.length-300} autres résultats.</div>` : '');
 
   window._plasmidResults = results;
